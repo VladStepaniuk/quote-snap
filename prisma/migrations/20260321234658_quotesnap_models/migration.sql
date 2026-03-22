@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "QuoteRule" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "shop" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "scope" TEXT NOT NULL,
@@ -11,13 +11,15 @@ CREATE TABLE "QuoteRule" (
     "replaceAddToCart" BOOLEAN NOT NULL DEFAULT true,
     "quoteButtonLabel" TEXT NOT NULL DEFAULT 'Request a Quote',
     "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "QuoteRule_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "QuoteRequest" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "shop" TEXT NOT NULL,
     "customerName" TEXT NOT NULL,
     "customerEmail" TEXT NOT NULL,
@@ -25,7 +27,9 @@ CREATE TABLE "QuoteRequest" (
     "company" TEXT NOT NULL DEFAULT '',
     "message" TEXT NOT NULL DEFAULT '',
     "status" TEXT NOT NULL DEFAULT 'new',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "QuoteRequest_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
