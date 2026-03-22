@@ -1,0 +1,361 @@
+.shell {
+  display: grid;
+  gap: 24px;
+  padding: 4px 0 24px;
+}
+
+.hero {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+  padding: 28px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(248, 188, 113, 0.22), transparent 32%),
+    linear-gradient(145deg, #fff8ef 0%, #f5efe7 100%);
+  border: 1px solid #eadfce;
+  box-shadow: 0 10px 24px rgba(49, 32, 18, 0.07);
+}
+
+.eyebrow,
+.sectionLabel {
+  margin: 0 0 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9b5a17;
+}
+
+.heroTitle,
+.sectionTitle,
+.subsectionTitle {
+  margin: 0;
+  color: #1f1b16;
+}
+
+.heroTitle {
+  font-size: clamp(1.75rem, 3.5vw, 2.55rem);
+  line-height: 1.05;
+  max-width: 16ch;
+}
+
+.heroCopy,
+.sectionCopy,
+.statHint,
+.helperText,
+.requestMessage,
+.emptyState,
+.emptyBanner {
+  margin: 0;
+  color: #5f544a;
+  line-height: 1.5;
+}
+
+.heroActions {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  justify-items: stretch;
+}
+
+.statusPill {
+  padding: 12px 14px;
+  border-radius: 999px;
+  background: rgba(33, 120, 72, 0.1);
+  color: #1f6f44;
+  font-weight: 600;
+  text-align: center;
+}
+
+.primaryButton,
+.secondaryButton,
+.ghostDangerButton {
+  appearance: none;
+  border-radius: 12px;
+  border: 0;
+  padding: 12px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #202226 0%, #9b5a17 100%);
+  color: #fff8f1;
+  box-shadow: 0 10px 20px rgba(77, 45, 13, 0.18);
+}
+
+.secondaryButton {
+  background: #efdec8;
+  color: #4d3014;
+}
+
+.ghostDangerButton {
+  background: transparent;
+  color: #a23628;
+  border: 1px solid #efc8c2;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover,
+.ghostDangerButton:hover {
+  transform: translateY(-1px);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.statCard,
+.card,
+.ruleCard,
+.newRuleCard,
+.requestCard,
+.previewResult {
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e6e0d8;
+  box-shadow: 0 12px 24px rgba(37, 27, 18, 0.05);
+}
+
+.statCard {
+  padding: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.statLabel,
+.fieldLabel,
+.previewLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #7a6a59;
+}
+
+.statValue,
+.statValueSmall {
+  color: #1f1b16;
+}
+
+.statValue {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.statValueSmall {
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+  gap: 20px;
+}
+
+.sideColumn {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+
+.card {
+  padding: 22px;
+  display: grid;
+  gap: 18px;
+}
+
+.sectionHeader {
+  display: grid;
+  gap: 8px;
+}
+
+.sectionCopy {
+  max-width: 64ch;
+}
+
+.emptyBanner,
+.emptyState {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f6f0e7;
+  border: 1px dashed #dcc7ae;
+}
+
+.ruleStack,
+.requestList {
+  display: grid;
+  gap: 16px;
+}
+
+.ruleCard,
+.newRuleCard {
+  padding: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.newRuleCard {
+  background: linear-gradient(180deg, #fffdfa 0%, #fbf7f0 100%);
+  border-style: dashed;
+}
+
+.newRuleHeader {
+  display: grid;
+  gap: 8px;
+}
+
+.formGridTwo,
+.formGridThree,
+.optionRow,
+.previewGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.formGridTwo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.formGridThree {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.optionRow {
+  grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid #cdc1b2;
+  border-radius: 12px;
+  background: #fffdf9;
+  color: #1f1b16;
+  padding: 12px 14px;
+  font: inherit;
+}
+
+.input:focus {
+  outline: 2px solid rgba(155, 90, 23, 0.18);
+  border-color: #9b5a17;
+}
+
+.checkboxField {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: #faf7f2;
+  border: 1px solid #ece3d7;
+  color: #3b3128;
+  font-weight: 600;
+}
+
+.checkboxField input {
+  accent-color: #9b5a17;
+}
+
+.actionsRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.previewControls {
+  display: grid;
+  gap: 14px;
+}
+
+.previewResult {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  background: linear-gradient(180deg, #fff9f2 0%, #f7f3ed 100%);
+}
+
+.previewTitle {
+  margin: 0;
+  color: #32291f;
+  font-weight: 700;
+}
+
+.previewGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.previewValue {
+  display: block;
+  margin-top: 6px;
+  font-size: 1rem;
+  color: #1f1b16;
+}
+
+.requestCard {
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.requestHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #1f1b16;
+}
+
+.requestMeta {
+  color: #6e6257;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+@media (max-width: 1100px) {
+  .hero,
+  .contentGrid,
+  .statsGrid,
+  .formGridThree,
+  .optionRow {
+    grid-template-columns: 1fr;
+  }
+
+  .formGridTwo,
+  .previewGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell {
+    gap: 18px;
+  }
+
+  .hero,
+  .card,
+  .ruleCard,
+  .newRuleCard,
+  .previewResult,
+  .statCard {
+    padding: 16px;
+  }
+
+  .heroActions,
+  .actionsRow,
+  .requestHeader {
+    grid-auto-flow: row;
+    display: grid;
+  }
+}

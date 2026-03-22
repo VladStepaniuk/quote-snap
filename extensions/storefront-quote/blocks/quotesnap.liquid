@@ -1,0 +1,74 @@
+{% comment %}
+  QuoteSnap — Hide Price & Request a Quote block
+  Add this block to your product page template in the theme editor.
+  The block reads rules from the app and applies them to the current product.
+{% endcomment %}
+
+<div
+  id="quotesnap-block"
+  data-quotesnap
+  data-product-id="{{ product.id | json }}"
+  data-collection-ids="{{ product.collections | map: 'id' | json }}"
+  data-shop="{{ shop.permanent_domain }}"
+  data-api-url="{{ shop.permanent_domain | prepend: 'https://' }}/apps/quotesnap/rules"
+  style="display:none"
+>
+  {%- comment -%} Populated by quotesnap.js once rules are fetched {%- endcomment -%}
+</div>
+
+{% comment %} Quote modal — hidden until triggered {% endcomment %}
+<div id="quotesnap-modal" class="quotesnap-modal" aria-modal="true" role="dialog" aria-labelledby="quotesnap-modal-title" hidden>
+  <div class="quotesnap-modal__backdrop"></div>
+  <div class="quotesnap-modal__dialog">
+    <button class="quotesnap-modal__close" aria-label="{{ 'quotesnap.modal.close' | t }}" type="button">&#x2715;</button>
+    <h2 id="quotesnap-modal-title" class="quotesnap-modal__title">{{ 'quotesnap.modal.title' | t }}</h2>
+    <p class="quotesnap-modal__product-name"></p>
+
+    <form id="quotesnap-form" class="quotesnap-form" novalidate>
+      <input type="hidden" name="productId" id="quotesnap-product-id" />
+      <input type="hidden" name="shop" id="quotesnap-shop" />
+
+      <label class="quotesnap-form__field">
+        <span>{{ 'quotesnap.form.name' | t }}</span>
+        <input type="text" name="customerName" required autocomplete="name" />
+      </label>
+
+      <label class="quotesnap-form__field">
+        <span>{{ 'quotesnap.form.email' | t }}</span>
+        <input type="email" name="customerEmail" required autocomplete="email" />
+      </label>
+
+      <label class="quotesnap-form__field">
+        <span>{{ 'quotesnap.form.company' | t }}</span>
+        <input type="text" name="company" autocomplete="organization" />
+      </label>
+
+      <label class="quotesnap-form__field">
+        <span>{{ 'quotesnap.form.message' | t }}</span>
+        <textarea name="message" rows="4"></textarea>
+      </label>
+
+      <p class="quotesnap-form__error" id="quotesnap-error" hidden></p>
+
+      <button type="submit" class="quotesnap-form__submit">
+        <span class="quotesnap-form__submit-text">{{ 'quotesnap.form.submit' | t }}</span>
+        <span class="quotesnap-form__submit-spinner" hidden>&#9679;&nbsp;&#9679;&nbsp;&#9679;</span>
+      </button>
+    </form>
+
+    <div id="quotesnap-success" class="quotesnap-success" hidden>
+      <p>{{ 'quotesnap.form.success' | t }}</p>
+    </div>
+  </div>
+</div>
+
+{{ 'quotesnap.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'quotesnap.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "QuoteSnap",
+  "target": "section",
+  "settings": []
+}
+{% endschema %}

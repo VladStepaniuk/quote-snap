@@ -1,0 +1,16 @@
+{
+  "quotesnap": {
+    "modal": {
+      "title": "Request a Quote",
+      "close": "Close"
+    },
+    "form": {
+      "name": "Your name",
+      "email": "Email address",
+      "company": "Company (optional)",
+      "message": "Message (optional)",
+      "submit": "Submit quote request",
+      "success": "Thanks! We'll be in touch shortly."
+    }
+  }
+}
