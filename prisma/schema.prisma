@@ -51,6 +51,18 @@ model QuoteRule {
   @@index([shop])
 }
 
+model GdprRequest {
+  id            String   @id @default(cuid())
+  shop          String
+  type          String   // DATA_REQUEST | CUSTOMER_REDACT | SHOP_REDACT
+  customerId    String   @default("")
+  customerEmail String   @default("")
+  payload       String   @default("")
+  createdAt     DateTime @default(now())
+
+  @@index([shop])
+}
+
 model QuoteRequest {
   id            String   @id @default(cuid())
   shop          String

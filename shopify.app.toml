@@ -1,8 +1,6 @@
-# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
-
 client_id = "1a185a141435cf91bd47d2b0c009c945"
 name = "QuoteSnap"
-application_url = "https://example.com"
+application_url = "https://quote-snap-production.up.railway.app"
 embedded = true
 
 [build]
@@ -12,16 +10,41 @@ include_config_on_deploy = true
 [webhooks]
 api_version = "2026-01"
 
+  [[webhooks.subscriptions]]
+  topics = ["app/uninstalled"]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = ["app/scopes_update"]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  topics = ["customers/data_request"]
+  uri = "/webhooks/customers/data_request"
+  compliance_topics = true
+
+  [[webhooks.subscriptions]]
+  topics = ["customers/redact"]
+  uri = "/webhooks/customers/redact"
+  compliance_topics = true
+
+  [[webhooks.subscriptions]]
+  topics = ["shop/redact"]
+  uri = "/webhooks/shop/redact"
+  compliance_topics = true
+
 [access_scopes]
 scopes = "read_products,read_customers,write_customers"
 optional_scopes = []
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = []
+redirect_urls = [
+  "https://quote-snap-production.up.railway.app/auth/callback"
+]
 
 [app_proxy]
-url = "https://example.com/apps/quotesnap"
+url = "https://quote-snap-production.up.railway.app/apps/quotesnap"
 subpath = "quotesnap"
 prefix = "apps"
 
