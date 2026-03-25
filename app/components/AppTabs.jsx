@@ -1,4 +1,4 @@
-import { useLocation, Link } from "react-router";
+import { useLocation } from "react-router";
 
 const TABS = [
   { label: "Dashboard", to: "/app" },
@@ -21,9 +21,9 @@ export function AppTabs() {
       {TABS.map(({ label, to }) => {
         const isActive = to === "/app" ? pathname === "/app" : pathname.startsWith(to);
         return (
-          <Link
+          <a
             key={to}
-            to={to}
+            href={to}
             style={{
               padding: "12px 20px",
               fontSize: "0.9rem",
@@ -36,7 +36,7 @@ export function AppTabs() {
             }}
           >
             {label}
-          </Link>
+          </a>
         );
       })}
     </div>
