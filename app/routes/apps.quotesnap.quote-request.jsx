@@ -60,7 +60,7 @@ export const action = async ({ request }) => {
   const settings = await prisma.shopSettings.findUnique({ where: { shop } });
   console.log("[QuoteSnap] ShopSettings for", shop, ":", settings?.notificationEmail, "enabled:", settings?.emailEnabled);
   if (settings?.emailEnabled && settings?.notificationEmail) {
-    sendQuoteNotification({
+    await sendQuoteNotification({
       to: settings.notificationEmail,
       shop,
       customerName,
