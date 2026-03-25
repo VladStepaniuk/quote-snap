@@ -11,13 +11,15 @@ import { defaultPreviewInput } from "../utils/quote-preview";
 
 export const loader = async ({ request }) => {
   const { session, admin } = await authenticate.admin(request);
-  return getQuoteDashboardData({ shop: session.shop, admin });
+  const data = await getQuoteDashboardData({ shop: session.shop, admin });
+  return Response.json(data);
 };
 
 export const action = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
-  return handleQuoteDashboardAction({ shop: session.shop, formData });
+  const result = await handleQuoteDashboardAction({ shop: session.shop, formData });
+  return Response.json(result);
 };
 
 export default function Index() {
