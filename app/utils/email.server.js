@@ -8,7 +8,7 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
-const FROM_EMAIL = "QuoteSnap <notifications@quotesnap.app>";
+const FROM_EMAIL = "QuoteSnap <onboarding@resend.dev>";
 
 /**
  * @param {{
@@ -36,7 +36,8 @@ export async function sendQuoteNotification({
   const adminUrl = `https://${shop}/admin/products/${productNum}`;
 
   try {
-    await resend.emails.send({
+    console.log("[QuoteSnap] Sending email to:", to);
+    const result = await resend.emails.send({
       from: FROM_EMAIL,
       to,
       subject: `New quote request from ${customerName} — ${shop}`,
@@ -86,6 +87,7 @@ export async function sendQuoteNotification({
         </div>
       `,
     });
+    console.log("[QuoteSnap] Email sent:", result?.data?.id || JSON.stringify(result));
   } catch (err) {
     // Fail silently — never break quote submission due to email error
     console.error("[QuoteSnap] Email notification failed:", err?.message);
