@@ -1,6 +1,7 @@
 import { Outlet, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
+import { AppTabs } from "../components/AppTabs";
 
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
@@ -10,11 +11,7 @@ export const loader = async ({ request }) => {
 export default function App() {
   return (
     <>
-      <ui-nav-menu>
-        <a href="/app" rel="home">Dashboard</a>
-        <a href="/app/billing">Billing</a>
-        <a href="/app/settings">Settings</a>
-      </ui-nav-menu>
+      <AppTabs />
       <Outlet />
     </>
   );
