@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useFetcher, useLoaderData } from "react-router";
+import { useFetcher, useLoaderData, useRevalidator } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import {
@@ -25,6 +25,7 @@ export const action = async ({ request }) => {
 export default function Index() {
   const { shop, rules, requests, products, supportEmail } = useLoaderData();
   const fetcher = useFetcher();
+  const { revalidate } = useRevalidator();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
   const [statusMessage, setStatusMessage] = useState("QuoteSnap is ready.");
@@ -32,6 +33,7 @@ export default function Index() {
   useEffect(() => {
     if (fetcher.data?.message) {
       setStatusMessage(fetcher.data.message);
+      revalidate();
     }
 
     if (fetcher.data?.error) {
