@@ -1,26 +1,18 @@
 /**
- * Email notifications via Resend.
- * Sends a notification to the merchant when a new quote request arrives.
+ * Email notifications via Nodemailer + Gmail SMTP.
  */
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
+const transporter = process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD
+  ? nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    })
   : null;
 
-const FROM_EMAIL = "QuoteSnap <onboarding@resend.dev>";
-
-/**
- * @param {{
- *   to: string,
- *   shop: string,
- *   customerName: string,
- *   customerEmail: string,
- *   company?: string,
- *   productId: string,
- *   message?: string,
- * }} params
- */
 export async function sendQuoteNotification({
   to,
   shop,
@@ -30,15 +22,15 @@ export async function sendQuoteNotification({
   productId,
   message,
 }) {
-  if (!resend || !to) return;
+  if (!transporter || !to) return;
 
   const productNum = productId?.split("/").pop() || productId;
   const adminUrl = `https://${shop}/admin/products/${productNum}`;
 
   try {
     console.log("[QuoteSnap] Sending email to:", to);
-    const result = await resend.emails.send({
-      from: FROM_EMAIL,
+    const result = await transporter.sendMail({
+      from: `"QuoteSnap" <${process.env.GMAIL_USER}>`,
       to,
       subject: `New quote request from ${customerName} — ${shop}`,
       html: `
@@ -81,15 +73,13 @@ export async function sendQuoteNotification({
             </div>
           </div>
           <p style="text-align: center; margin-top: 20px; font-size: 0.78rem; color: #9ca3af;">
-            You're receiving this because you have email notifications enabled in QuoteSnap.<br>
-            <a href="https://${shop}/admin/apps/quotesnap/app/settings" style="color: #9ca3af;">Manage notification settings</a>
+            Sent by QuoteSnap · <a href="https://${shop}/admin/apps/quotesnap/app/settings" style="color: #9ca3af;">Manage notifications</a>
           </p>
         </div>
       `,
     });
-    console.log("[QuoteSnap] Email sent:", result?.data?.id || JSON.stringify(result));
+    console.log("[QuoteSnap] Email sent:", result.messageId);
   } catch (err) {
-    // Fail silently — never break quote submission due to email error
     console.error("[QuoteSnap] Email notification failed:", err?.message);
   }
 }
