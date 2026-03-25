@@ -16,7 +16,8 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .quotesnap-cta:hover,
