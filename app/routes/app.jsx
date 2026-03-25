@@ -11,7 +11,11 @@ export const loader = async ({ request }) => {
 export default function App() {
   return (
     <>
-      <AppTabs />
+      <ui-nav-menu>
+        <a href="/app" rel="home">Dashboard</a>
+        <a href="/app/billing">Billing</a>
+        <a href="/app/settings">Settings</a>
+      </ui-nav-menu>
       <Outlet />
     </>
   );
