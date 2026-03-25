@@ -4,6 +4,7 @@
  * Public endpoint — validated by required fields + shop param from Shopify proxy.
  */
 import prisma from "../db.server";
+import { sendQuoteNotification } from "../utils/email.server";
 
 const MAX_LENGTH = 2000;
 
@@ -54,6 +55,20 @@ export const action = async ({ request }) => {
       status: "new",
     },
   });
+
+  // Fire-and-forget email notification
+  const settings = await prisma.shopSettings.findUnique({ where: { shop } });
+  if (settings?.emailEnabled && settings?.notificationEmail) {
+    sendQuoteNotification({
+      to: settings.notificationEmail,
+      shop,
+      customerName,
+      customerEmail,
+      company: sanitize(body.company),
+      productId,
+      message: sanitize(body.message, MAX_LENGTH),
+    });
+  }
 
   return Response.json({ ok: true, id: record.id }, {
     status: 201,
