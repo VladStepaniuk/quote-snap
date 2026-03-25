@@ -7,7 +7,7 @@ const TABS = [
 ];
 
 export function AppTabs() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
 
   return (
     <div style={{
@@ -23,7 +23,7 @@ export function AppTabs() {
         return (
           <a
             key={to}
-            href={to}
+            href={`${to}${search}`}
             style={{
               padding: "12px 20px",
               fontSize: "0.9rem",
