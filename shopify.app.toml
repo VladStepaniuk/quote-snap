@@ -19,19 +19,16 @@ api_version = "2026-01"
   uri = "/webhooks/app/scopes_update"
 
   [[webhooks.subscriptions]]
-  topics = ["customers/data_request"]
+  compliance_topics = ["customers/data_request"]
   uri = "/webhooks/customers/data_request"
-  compliance_topics = true
 
   [[webhooks.subscriptions]]
-  topics = ["customers/redact"]
+  compliance_topics = ["customers/redact"]
   uri = "/webhooks/customers/redact"
-  compliance_topics = true
 
   [[webhooks.subscriptions]]
-  topics = ["shop/redact"]
+  compliance_topics = ["shop/redact"]
   uri = "/webhooks/shop/redact"
-  compliance_topics = true
 
 [access_scopes]
 scopes = "read_products,read_customers,write_customers"
