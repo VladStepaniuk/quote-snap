@@ -10,7 +10,7 @@
   data-product-id="{{ product.id | json }}"
   data-collection-ids="{{ product.collections | map: 'id' | json }}"
   data-shop="{{ shop.permanent_domain }}"
-  data-api-url="{{ shop.permanent_domain | prepend: 'https://' }}/apps/quotesnap/rules"
+  data-api-url="/apps/quotesnap/rules"
   style="display:none"
 >
   {%- comment -%} Populated by quotesnap.js once rules are fetched {%- endcomment -%}
