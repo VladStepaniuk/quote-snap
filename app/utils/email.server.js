@@ -63,7 +63,7 @@ export async function sendQuoteNotification({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: { name: "QuoteSnap", email: "notifications@quotesnap.app" },
+        sender: { name: "QuoteSnap", email: process.env.BREVO_SENDER_EMAIL || "vladstepaniuk44@gmail.com" },
         to: [{ email: to }],
         subject: `New quote request from ${customerName} — ${shop}`,
         htmlContent: html,
