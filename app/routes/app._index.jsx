@@ -5,19 +5,23 @@ import { authenticate } from "../shopify.server";
 import {
   getQuoteDashboardData,
   handleQuoteDashboardAction,
+  getAnalytics,
 } from "../models/quotes.server";
 import { defaultPreviewInput } from "../utils/quote-preview";
 
 export const loader = async ({ request }) => {
-  const { session, admin } = await authenticate.admin(request);
-  const data = await getQuoteDashboardData({ shop: session.shop, admin });
-  return Response.json(data);
+  const { session, admin, billing } = await authenticate.admin(request);
+  const [data, analytics] = await Promise.all([
+    getQuoteDashboardData({ shop: session.shop, admin, billing }),
+    getAnalytics(session.shop),
+  ]);
+  return Response.json({ ...data, analytics });
 };
 
 export const action = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
+  const { session, billing } = await authenticate.admin(request);
   const formData = await request.formData();
-  const result = await handleQuoteDashboardAction({ shop: session.shop, formData });
+  const result = await handleQuoteDashboardAction({ shop: session.shop, formData, billing });
   return Response.json(result);
 };
 
@@ -54,24 +58,34 @@ const s = {
   scrollList: { maxHeight: 380, overflowY: "auto", paddingRight: 4 },
   deleteQuoteBtn: { background: "none", border: "none", color: "#8c9196", cursor: "pointer", fontSize: "1rem", padding: "0 4px", lineHeight: 1, flexShrink: 0 },
   notice: { background: "#f0f8f5", border: "1px solid #b5e0d3", borderRadius: 6, padding: "10px 14px", marginBottom: 16, fontSize: "0.875rem", color: "#108043" },
+  errorNotice: { background: "#fff4f4", border: "1px solid #fda29b", borderRadius: 6, padding: "10px 14px", marginBottom: 16, fontSize: "0.875rem", color: "#d82c0d" },
+  barWrap: { display: "flex", alignItems: "flex-end", gap: 3, height: 60, marginTop: 8 },
+  bar: { flex: 1, background: "#008060", borderRadius: "2px 2px 0 0", minHeight: 2 },
+  barLabel: { fontSize: "0.6rem", color: "#8c9196", textAlign: "center", marginTop: 2 },
+  planBadge: { display: "inline-block", background: "#f2f7fe", color: "#1f5199", borderRadius: 4, padding: "2px 8px", fontSize: "0.72rem", fontWeight: 600, marginLeft: 6 },
 };
 
 export default function Index() {
-  const { shop, rules, requests, products } = useLoaderData();
+  const { shop, rules, requests, products, currentPlan, maxRules, analytics } = useLoaderData();
   const fetcher = useFetcher();
   const { revalidate } = useRevalidator();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
   const [statusMessage, setStatusMessage] = useState(null);
+  const [statusError, setStatusError] = useState(null);
   const [showAddRule, setShowAddRule] = useState(false);
 
   useEffect(() => {
     if (fetcher.data?.message) {
       setStatusMessage(fetcher.data.message);
+      setStatusError(null);
       setShowAddRule(false);
       revalidate();
     }
-    if (fetcher.data?.error) setStatusMessage(fetcher.data.error);
+    if (fetcher.data?.error) {
+      setStatusError(fetcher.data.error);
+      setStatusMessage(null);
+    }
   }, [fetcher.data]);
 
   useEffect(() => {
@@ -99,6 +113,13 @@ export default function Index() {
     fetcher.submit(fd, { method: "POST" });
   };
 
+  const deleteRequest = (id) => {
+    const fd = new FormData();
+    fd.set("intent", "delete-request");
+    fd.set("id", id);
+    fetcher.submit(fd, { method: "POST" });
+  };
+
   const runPreview = () => {
     const fd = new FormData();
     fd.set("intent", "preview");
@@ -109,12 +130,13 @@ export default function Index() {
     fetcher.submit(fd, { method: "POST" });
   };
 
-  const deleteRequest = (id) => {
-    const fd = new FormData();
-    fd.set("intent", "delete-request");
-    fd.set("id", id);
-    fetcher.submit(fd, { method: "POST" });
+  const exportCsv = () => {
+    // Open CSV export in new tab to trigger file download
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    window.open(`/app/export-csv${search}`, "_blank");
   };
+
+  const maxBar = Math.max(1, ...analytics.daily.map((d) => d.count));
 
   const RuleForm = ({ rule }) => (
     <form style={s.ruleCard} onSubmit={(e) => saveRule(e, rule)}>
@@ -173,38 +195,62 @@ export default function Index() {
     </form>
   );
 
+  const canAddRule = maxRules === null || rules.length < maxRules;
+
   return (
     <s-page heading="QuoteSnap" inlineSize="base">
       <div style={s.page}>
-        {statusMessage && (
-          <div style={s.notice}>
-            {statusMessage}
-          </div>
-        )}
+        {statusMessage && <div style={s.notice}>{statusMessage}</div>}
+        {statusError && <div style={s.errorNotice}>{statusError}</div>}
 
         {/* Stats */}
         <div style={s.statsRow}>
           <div style={s.statCard}>
-            <span style={s.statNum}>{rules.length}</span>
-            <span style={s.statLabel}>Active rules</span>
+            <span style={s.statNum}>{analytics.total}</span>
+            <span style={s.statLabel}>Total quotes</span>
           </div>
           <div style={s.statCard}>
-            <span style={s.statNum}>{requests.length}</span>
-            <span style={s.statLabel}>Quote requests</span>
+            <span style={s.statNum}>{analytics.last30}</span>
+            <span style={s.statLabel}>Last 30 days</span>
           </div>
           <div style={s.statCard}>
-            <span style={s.statNum}>{products.length}</span>
-            <span style={s.statLabel}>Products loaded</span>
+            <span style={s.statNum}>{rules.length}{maxRules !== null ? <span style={{ fontSize: "1rem", color: "#6d7175" }}>/{maxRules}</span> : null}</span>
+            <span style={s.statLabel}>Rules used<span style={s.planBadge}>{currentPlan}</span></span>
           </div>
         </div>
 
         <div style={s.grid}>
           {/* Left — Rules */}
           <div>
+            {/* Analytics chart */}
+            <div style={s.card}>
+              <div style={s.cardTitle}>Quote requests — last 14 days</div>
+              <div style={s.barWrap}>
+                {analytics.daily.map((d) => (
+                  <div key={d.date} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <div style={{ ...s.bar, height: `${Math.max(4, Math.round((d.count / maxBar) * 56))}px` }} title={`${d.date}: ${d.count}`} />
+                    <div style={s.barLabel}>{d.date.slice(5)}</div>
+                  </div>
+                ))}
+              </div>
+              {analytics.topProducts.length > 0 && (
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ ...s.label, marginBottom: 8 }}>Top products</div>
+                  {analytics.topProducts.map((p) => (
+                    <div key={p.productId} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", padding: "3px 0", borderBottom: "1px solid #f1f2f3" }}>
+                      <span style={{ color: "#6d7175", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "80%" }}>{p.productId.split("/").pop()}</span>
+                      <span style={{ fontWeight: 600, color: "#202223" }}>{p.count}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Rules */}
             <div style={s.card}>
               <div style={s.cardTitle}>
                 <span>Visibility rules</span>
-                <span style={s.tag}>{rules.length} rule{rules.length !== 1 ? "s" : ""}</span>
+                <span style={s.tag}>{rules.length}{maxRules !== null ? `/${maxRules}` : ""} rule{rules.length !== 1 ? "s" : ""}</span>
               </div>
 
               {rules.length === 0 && !showAddRule && (
@@ -215,8 +261,12 @@ export default function Index() {
 
               {showAddRule ? (
                 <RuleForm rule={{ id: "", name: "", quoteButtonLabel: "Request a Quote", scope: "all_products", scopeValue: "", visibility: "all_visitors", hidePrice: true, replaceAddToCart: true, enabled: true }} />
-              ) : (
+              ) : canAddRule ? (
                 <button style={s.addBtn} onClick={() => setShowAddRule(true)}>+ Add rule</button>
+              ) : (
+                <div style={{ ...s.errorNotice, marginTop: 8, textAlign: "center" }}>
+                  Plan limit reached ({rules.length}/{maxRules} rules). <a href="?page=billing" style={{ color: "#008060" }}>Upgrade</a> to add more.
+                </div>
               )}
             </div>
           </div>
@@ -225,7 +275,14 @@ export default function Index() {
           <div style={{ display: "grid", gap: 14 }}>
             {/* Quote requests */}
             <div style={s.card}>
-              <div style={s.cardTitle}>Recent quotes</div>
+              <div style={s.cardTitle}>
+                <span>Recent quotes</span>
+                {requests.length > 0 && (
+                  <button style={{ ...s.btnSecondary, padding: "4px 10px", fontSize: "0.78rem" }} type="button" onClick={exportCsv}>
+                    ↓ CSV
+                  </button>
+                )}
+              </div>
               {requests.length === 0 ? (
                 <div style={s.emptyState}>No quote requests yet.</div>
               ) : (
@@ -269,12 +326,12 @@ export default function Index() {
                 </label>
                 <button style={s.btnPrimary} type="button" onClick={runPreview}>Run preview</button>
                 {fetcher.data?.preview && (
-                  <div style={{ background: "#f9fafb", borderRadius: 8, padding: "12px", fontSize: "0.8rem", marginTop: 4 }}>
-                    <div style={{ marginBottom: 6, fontWeight: 600, color: "#111827" }}>{fetcher.data.preview.message}</div>
+                  <div style={{ background: "#f6f6f7", borderRadius: 6, padding: "12px", fontSize: "0.8rem", marginTop: 4 }}>
+                    <div style={{ marginBottom: 6, fontWeight: 600, color: "#202223" }}>{fetcher.data.preview.message}</div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, color: "#374151" }}>
-                      <div><span style={{ color: "#9ca3af" }}>Price visible: </span>{fetcher.data.preview.priceVisible ? "Yes" : "No"}</div>
-                      <div><span style={{ color: "#9ca3af" }}>Add to cart: </span>{fetcher.data.preview.addToCartVisible ? "Yes" : "No"}</div>
-                      <div style={{ gridColumn: "1/-1" }}><span style={{ color: "#9ca3af" }}>CTA: </span>{fetcher.data.preview.quoteButtonLabel || "None"}</div>
+                      <div><span style={{ color: "#8c9196" }}>Price visible: </span>{fetcher.data.preview.priceVisible ? "Yes" : "No"}</div>
+                      <div><span style={{ color: "#8c9196" }}>Add to cart: </span>{fetcher.data.preview.addToCartVisible ? "Yes" : "No"}</div>
+                      <div style={{ gridColumn: "1/-1" }}><span style={{ color: "#8c9196" }}>CTA: </span>{fetcher.data.preview.quoteButtonLabel || "None"}</div>
                     </div>
                   </div>
                 )}

@@ -1,5 +1,6 @@
 import prisma from "../db.server";
 import { evaluatePreview, normalizeCsv } from "../utils/quote-preview";
+import { getMaxRules } from "../utils/plans.js";
 
 const quoteSnapProductSnapshotQuery = `#graphql
   query QuoteSnapProductSnapshot {
@@ -40,38 +41,52 @@ function buildRulePayload(formData, shop) {
 }
 
 function validateRulePayload(payload) {
-  if (!payload.name) {
-    return "Rule name is required.";
-  }
-
-  if (payload.scope !== "all_products" && !payload.scopeValue) {
+  if (!payload.name) return "Rule name is required.";
+  if (payload.scope !== "all_products" && !payload.scopeValue)
     return "Scope value is required for product or collection rules.";
-  }
-
-  if (payload.visibility === "tagged_customers" && !payload.customerTag) {
+  if (payload.visibility === "tagged_customers" && !payload.customerTag)
     return "Customer tag is required for tagged-customer rules.";
-  }
-
   return null;
 }
 
 async function getProductSnapshot(admin) {
   const response = await admin.graphql(quoteSnapProductSnapshotQuery);
   const responseJson = await response.json();
-
   return responseJson.data?.products?.nodes ?? [];
 }
 
-async function saveRule(shop, formData) {
+async function getCurrentPlan(billing) {
+  try {
+    const { hasActivePayment, appSubscriptions } = await billing.check({
+      plans: ["Starter", "Pro"],
+      isTest: process.env.NODE_ENV !== "production",
+    });
+    if (!hasActivePayment) return "free";
+    return (appSubscriptions[0]?.name || "free").toLowerCase();
+  } catch {
+    return "free";
+  }
+}
+
+async function saveRule(shop, formData, billing) {
   const ruleId = getTrimmedString(formData, "id");
   const payload = buildRulePayload(formData, shop);
   const validationError = validateRulePayload(payload);
+  if (validationError) return { ok: false, error: validationError };
 
-  if (validationError) {
-    return { ok: false, error: validationError };
-  }
-
+  // Enforce plan rule limits on create
   if (!ruleId) {
+    const plan = await getCurrentPlan(billing);
+    const maxRules = getMaxRules(plan);
+    if (maxRules !== null) {
+      const count = await prisma.quoteRule.count({ where: { shop } });
+      if (count >= maxRules) {
+        return {
+          ok: false,
+          error: `Your ${plan} plan allows up to ${maxRules} rule${maxRules === 1 ? "" : "s"}. Upgrade to add more.`,
+        };
+      }
+    }
     await prisma.quoteRule.create({ data: payload });
     return { ok: true, message: "Rule saved." };
   }
@@ -80,26 +95,15 @@ async function saveRule(shop, formData) {
     where: { id: ruleId, shop },
     select: { id: true },
   });
+  if (!existingRule) return { ok: false, error: "Rule not found." };
 
-  if (!existingRule) {
-    return { ok: false, error: "Rule not found." };
-  }
-
-  await prisma.quoteRule.update({
-    where: { id: ruleId },
-    data: payload,
-  });
-
+  await prisma.quoteRule.update({ where: { id: ruleId }, data: payload });
   return { ok: true, message: "Rule saved." };
 }
 
 async function deleteRule(shop, formData) {
   const ruleId = getTrimmedString(formData, "id");
-
-  await prisma.quoteRule.deleteMany({
-    where: { id: ruleId, shop },
-  });
-
+  await prisma.quoteRule.deleteMany({ where: { id: ruleId, shop } });
   return { ok: true, message: "Rule deleted." };
 }
 
@@ -120,7 +124,6 @@ async function seedRequest(shop, formData) {
       message: "Need wholesale pricing for 250 units.",
     },
   });
-
   return { ok: true, message: "Sample quote request created." };
 }
 
@@ -132,48 +135,71 @@ async function previewRules(shop, formData) {
     loggedIn: formData.get("loggedIn") === "on",
     tags: normalizeCsv(getTrimmedString(formData, "tags")),
   });
-
   return { ok: true, preview, message: "Preview updated." };
 }
 
-export async function getQuoteDashboardData({ shop, admin }) {
-  const [rules, requests, products] = await Promise.all([
-    prisma.quoteRule.findMany({
+export async function getAnalytics(shop) {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const [total, last30, byProduct] = await Promise.all([
+    prisma.quoteRequest.count({ where: { shop } }),
+    prisma.quoteRequest.count({ where: { shop, createdAt: { gte: thirtyDaysAgo } } }),
+    prisma.quoteRequest.groupBy({
+      by: ["productId"],
       where: { shop },
-      orderBy: [{ createdAt: "asc" }],
+      _count: { productId: true },
+      orderBy: { _count: { productId: "desc" } },
+      take: 5,
     }),
-    prisma.quoteRequest.findMany({
-      where: { shop },
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    }),
-    getProductSnapshot(admin),
   ]);
 
+  // Daily counts for last 14 days
+  const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+  const recent = await prisma.quoteRequest.findMany({
+    where: { shop, createdAt: { gte: fourteenDaysAgo } },
+    select: { createdAt: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const dailyMap = {};
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+    const key = d.toISOString().slice(0, 10);
+    dailyMap[key] = 0;
+  }
+  for (const r of recent) {
+    const key = r.createdAt.toISOString().slice(0, 10);
+    if (key in dailyMap) dailyMap[key]++;
+  }
+
   return {
-    shop,
-    rules,
-    requests,
-    products,
-    supportEmail: "support@quotesnap.app",
+    total,
+    last30,
+    topProducts: byProduct.map((r) => ({ productId: r.productId, count: r._count.productId })),
+    daily: Object.entries(dailyMap).map(([date, count]) => ({ date, count })),
   };
 }
 
-export async function handleQuoteDashboardAction({ shop, formData }) {
-  const intent = getTrimmedString(formData, "intent");
+export async function getQuoteDashboardData({ shop, admin, billing }) {
+  const [rules, requests, products, currentPlan] = await Promise.all([
+    prisma.quoteRule.findMany({ where: { shop }, orderBy: { createdAt: "asc" } }),
+    prisma.quoteRequest.findMany({ where: { shop }, orderBy: { createdAt: "desc" }, take: 200 }),
+    getProductSnapshot(admin),
+    getCurrentPlan(billing),
+  ]);
 
+  const maxRules = getMaxRules(currentPlan);
+
+  return { shop, rules, requests, products, currentPlan, maxRules, supportEmail: "support@quotesnap.app" };
+}
+
+export async function handleQuoteDashboardAction({ shop, formData, billing }) {
+  const intent = getTrimmedString(formData, "intent");
   switch (intent) {
-    case "save-rule":
-      return saveRule(shop, formData);
-    case "delete-rule":
-      return deleteRule(shop, formData);
-    case "delete-request":
-      return deleteRequest(shop, formData);
-    case "seed-request":
-      return seedRequest(shop, formData);
-    case "preview":
-      return previewRules(shop, formData);
-    default:
-      return { ok: false, error: "Unknown action." };
+    case "save-rule": return saveRule(shop, formData, billing);
+    case "delete-rule": return deleteRule(shop, formData);
+    case "delete-request": return deleteRequest(shop, formData);
+    case "seed-request": return seedRequest(shop, formData);
+    case "preview": return previewRules(shop, formData);
+    default: return { ok: false, error: "Unknown action." };
   }
 }
