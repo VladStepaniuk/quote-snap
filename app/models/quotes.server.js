@@ -55,20 +55,26 @@ async function getProductSnapshot(admin) {
   return responseJson.data?.products?.nodes ?? [];
 }
 
-async function getCurrentPlan(billing) {
+async function getCurrentPlan(admin) {
   try {
-    const { hasActivePayment, appSubscriptions } = await billing.check({
-      plans: ["Starter", "Pro"],
-      isTest: process.env.NODE_ENV !== "production",
-    });
-    if (!hasActivePayment) return "free";
-    return (appSubscriptions[0]?.name || "free").toLowerCase();
+    const resp = await admin.graphql(`
+      query {
+        currentAppInstallation {
+          activeSubscriptions { name status }
+        }
+      }
+    `);
+    const data = await resp.json();
+    const subs = data?.data?.currentAppInstallation?.activeSubscriptions || [];
+    const active = subs.find((s) => s.status === "ACTIVE");
+    if (!active) return "free";
+    return active.name.toLowerCase().includes("pro") ? "pro" : "starter";
   } catch {
     return "free";
   }
 }
 
-async function saveRule(shop, formData, billing) {
+async function saveRule(shop, formData, admin) {
   const ruleId = getTrimmedString(formData, "id");
   const payload = buildRulePayload(formData, shop);
   const validationError = validateRulePayload(payload);
@@ -76,7 +82,7 @@ async function saveRule(shop, formData, billing) {
 
   // Enforce plan rule limits on create
   if (!ruleId) {
-    const plan = await getCurrentPlan(billing);
+    const plan = await getCurrentPlan(admin);
     const maxRules = getMaxRules(plan);
     if (maxRules !== null) {
       const count = await prisma.quoteRule.count({ where: { shop } });
@@ -184,7 +190,7 @@ export async function getQuoteDashboardData({ shop, admin, billing }) {
     prisma.quoteRule.findMany({ where: { shop }, orderBy: { createdAt: "asc" } }),
     prisma.quoteRequest.findMany({ where: { shop }, orderBy: { createdAt: "desc" }, take: 200 }),
     getProductSnapshot(admin),
-    getCurrentPlan(billing),
+    getCurrentPlan(admin),
   ]);
 
   const maxRules = getMaxRules(currentPlan);
@@ -192,10 +198,10 @@ export async function getQuoteDashboardData({ shop, admin, billing }) {
   return { shop, rules, requests, products, currentPlan, maxRules, supportEmail: "support@quotesnap.app" };
 }
 
-export async function handleQuoteDashboardAction({ shop, formData, billing }) {
+export async function handleQuoteDashboardAction({ shop, formData, admin }) {
   const intent = getTrimmedString(formData, "intent");
   switch (intent) {
-    case "save-rule": return saveRule(shop, formData, billing);
+    case "save-rule": return saveRule(shop, formData, admin);
     case "delete-rule": return deleteRule(shop, formData);
     case "delete-request": return deleteRequest(shop, formData);
     case "seed-request": return seedRequest(shop, formData);

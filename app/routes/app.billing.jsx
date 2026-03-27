@@ -1,60 +1,120 @@
 /**
- * Billing route — handles plan selection and redirects to Shopify confirmation.
+ * Billing route — uses raw GraphQL appSubscriptionCreate (same as bulk_price_adjuster)
  */
 import { redirect, useLoaderData } from "react-router";
+import { authenticate } from "../shopify.server";
 import { PLANS } from "../utils/plans";
 
 export { PLANS };
 
+const PLAN_CONFIG = {
+  starter: { amount: "9.00", trialDays: 7 },
+  pro: { amount: "29.00", trialDays: 7 },
+};
+
+const APP_URL = "https://quote-snap-production.up.railway.app";
+
 export const loader = async ({ request }) => {
-  const { authenticate } = await import("../shopify.server");
-  const { billing } = await authenticate.admin(request);
+  const { admin } = await authenticate.admin(request);
 
-  const { hasActivePayment, appSubscriptions } = await billing.check({
-    plans: [PLANS.starter.name, PLANS.pro.name],
-    isTest: process.env.NODE_ENV !== "production",
-  });
+  const resp = await admin.graphql(`
+    query {
+      currentAppInstallation {
+        activeSubscriptions {
+          name
+          status
+          id
+        }
+      }
+    }
+  `);
+  const data = await resp.json();
+  const subs = data?.data?.currentAppInstallation?.activeSubscriptions || [];
+  const active = subs.find((s) => s.status === "ACTIVE");
+  const currentPlan = active
+    ? active.name.toLowerCase().includes("pro") ? "pro" : "starter"
+    : "free";
 
-  return Response.json({
-    plans: PLANS,
-    currentPlan: hasActivePayment
-      ? appSubscriptions[0]?.name?.toLowerCase() || "free"
-      : "free",
-  });
+  return Response.json({ plans: PLANS, currentPlan });
 };
 
 export const action = async ({ request }) => {
-  const { authenticate } = await import("../shopify.server");
-  const { billing } = await authenticate.admin(request);
-
+  const { admin } = await authenticate.admin(request);
   const formData = await request.formData();
   const plan = formData.get("plan");
 
+  // Downgrade to free — cancel active subscription
   if (!plan || plan === "free") {
-    const { hasActivePayment, appSubscriptions } = await billing.check({
-      plans: [PLANS.starter.name, PLANS.pro.name],
-      isTest: process.env.NODE_ENV !== "production",
-    });
-
-    if (hasActivePayment) {
-      await billing.cancel({
-        subscriptionId: appSubscriptions[0].id,
-        isTest: process.env.NODE_ENV !== "production",
-        prorate: true,
-      });
+    const resp = await admin.graphql(`
+      query {
+        currentAppInstallation {
+          activeSubscriptions { id status }
+        }
+      }
+    `);
+    const data = await resp.json();
+    const subs = data?.data?.currentAppInstallation?.activeSubscriptions || [];
+    const active = subs.find((s) => s.status === "ACTIVE");
+    if (active) {
+      await admin.graphql(`
+        mutation cancel($id: ID!) {
+          appSubscriptionCancel(id: $id) {
+            appSubscription { id status }
+            userErrors { field message }
+          }
+        }
+      `, { variables: { id: active.id } });
     }
-
     return redirect("/app");
   }
 
-  const selectedPlan = PLANS[plan];
-  if (!selectedPlan) return Response.json({ error: "Invalid plan" }, { status: 400 });
+  const config = PLAN_CONFIG[plan];
+  const planName = PLANS[plan]?.name;
+  if (!config || !planName) return Response.json({ error: "Invalid plan" }, { status: 400 });
 
-  return await billing.request({
-    plan: selectedPlan.name,
-    isTest: process.env.NODE_ENV !== "production",
-    returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing`,
+  const isTest = process.env.NODE_ENV !== "production";
+  const returnUrl = `${APP_URL}/app/billing`;
+
+  const resp = await admin.graphql(`
+    mutation createSub($name: String!, $lineItems: [AppSubscriptionLineItemInput!]!, $returnUrl: URL!, $trialDays: Int, $test: Boolean) {
+      appSubscriptionCreate(
+        name: $name
+        lineItems: $lineItems
+        returnUrl: $returnUrl
+        trialDays: $trialDays
+        test: $test
+      ) {
+        confirmationUrl
+        appSubscription { id status }
+        userErrors { field message }
+      }
+    }
+  `, {
+    variables: {
+      name: planName,
+      returnUrl,
+      trialDays: config.trialDays,
+      test: isTest,
+      lineItems: [{
+        plan: {
+          appRecurringPricingDetails: {
+            price: { amount: config.amount, currencyCode: "USD" },
+            interval: "EVERY_30_DAYS",
+          },
+        },
+      }],
+    },
   });
+
+  const data = await resp.json();
+  const result = data?.data?.appSubscriptionCreate;
+  if (result?.userErrors?.length) {
+    return Response.json({ error: result.userErrors[0].message }, { status: 400 });
+  }
+  if (result?.confirmationUrl) {
+    return redirect(result.confirmationUrl);
+  }
+  return Response.json({ error: "Failed to create subscription" }, { status: 500 });
 };
 
 export default function BillingPage() {
@@ -80,10 +140,10 @@ export default function BillingPage() {
               <div
                 key={plan.key}
                 style={{
-                  border: isCurrent ? "2px solid #4f46e5" : "1px solid #e3e7ed",
+                  border: isCurrent ? "2px solid #008060" : "1px solid #e3e7ed",
                   borderRadius: 12,
                   padding: "20px 18px",
-                  background: isCurrent ? "#eef2ff" : "#fff",
+                  background: isCurrent ? "#f0f8f5" : "#fff",
                   display: "grid",
                   gap: 12,
                 }}
@@ -105,8 +165,8 @@ export default function BillingPage() {
                 </ul>
 
                 {isCurrent ? (
-                  <div style={{ textAlign: "center", fontWeight: 600, color: "#4f46e5", fontSize: "0.875rem" }}>
-                    Current plan
+                  <div style={{ textAlign: "center", fontWeight: 600, color: "#008060", fontSize: "0.875rem" }}>
+                    ✓ Current plan
                   </div>
                 ) : (
                   <form method="post">
@@ -116,7 +176,7 @@ export default function BillingPage() {
                       style={{
                         width: "100%",
                         padding: "10px 0",
-                        background: plan.key === "free" ? "#f3f4f6" : "#4f46e5",
+                        background: plan.key === "free" ? "#f3f4f6" : "#008060",
                         color: plan.key === "free" ? "#374151" : "#fff",
                         border: "none",
                         borderRadius: 8,

@@ -10,18 +10,18 @@ import {
 import { defaultPreviewInput } from "../utils/quote-preview";
 
 export const loader = async ({ request }) => {
-  const { session, admin, billing } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
   const [data, analytics] = await Promise.all([
-    getQuoteDashboardData({ shop: session.shop, admin, billing }),
+    getQuoteDashboardData({ shop: session.shop, admin }),
     getAnalytics(session.shop),
   ]);
   return Response.json({ ...data, analytics });
 };
 
 export const action = async ({ request }) => {
-  const { session, billing } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
   const formData = await request.formData();
-  const result = await handleQuoteDashboardAction({ shop: session.shop, formData, billing });
+  const result = await handleQuoteDashboardAction({ shop: session.shop, formData, admin });
   return Response.json(result);
 };
 
