@@ -1,5 +1,5 @@
 /**
- * Billing route — GET ?plan=starter|pro triggers subscription, POST handles cancel
+ * Billing route — GET ?plan=starter|pro triggers subscription via GraphQL
  */
 import { redirect, useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
@@ -11,8 +11,6 @@ const PLAN_CONFIG = {
   starter: { amount: "9.00", trialDays: 7 },
   pro: { amount: "29.00", trialDays: 7 },
 };
-
-const APP_URL = "https://quote-snap-production.up.railway.app";
 
 async function getActiveSub(admin) {
   const resp = await admin.graphql(`
@@ -32,7 +30,10 @@ export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const plan = url.searchParams.get("plan");
 
-  // If plan param present — create subscription and redirect to Shopify confirmation
+  const shopName = session.shop.replace(".myshopify.com", "");
+  const returnUrl = `https://admin.shopify.com/store/${shopName}/apps/quotesnap/app/billing`;
+
+  // Upgrade — create subscription and redirect to Shopify confirmation
   if (plan && plan !== "free" && PLAN_CONFIG[plan]) {
     const config = PLAN_CONFIG[plan];
     const planName = PLANS[plan]?.name;
@@ -55,7 +56,7 @@ export const loader = async ({ request }) => {
     `, {
       variables: {
         name: planName,
-        returnUrl: `${APP_URL}/app/billing?shop=${session.shop}`,
+        returnUrl,
         trialDays: config.trialDays,
         test: isTest,
         lineItems: [{
@@ -74,10 +75,9 @@ export const loader = async ({ request }) => {
     if (result?.confirmationUrl) {
       return redirect(result.confirmationUrl);
     }
-    // Fall through to page render with error
   }
 
-  // If plan=free — cancel active subscription
+  // Downgrade to free — cancel active subscription
   if (plan === "free") {
     const active = await getActiveSub(admin);
     if (active) {
@@ -102,10 +102,9 @@ export const loader = async ({ request }) => {
 
 export default function BillingPage() {
   const { plans, currentPlan } = useLoaderData();
-  const search = typeof window !== "undefined" ? window.location.search : "";
-  // Preserve shop/host params and add plan param
+
   const planHref = (planKey) => {
-    const params = new URLSearchParams(search);
+    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
     params.set("plan", planKey);
     return `/app/billing?${params.toString()}`;
   };
