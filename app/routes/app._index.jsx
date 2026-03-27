@@ -96,7 +96,13 @@ export default function Index() {
     }
   }, [products]);
 
-  const productOptions = products.map((p) => ({ value: p.id, label: p.title, collections: p.collections.nodes }));
+  const productMap = useMemo(() => {
+    const m = {};
+    for (const p of products) m[p.id] = p.title;
+    return m;
+  }, [products]);
+
+  const productLabel = (id) => productMap[id] || id.split("/").pop();
 
   const saveRule = (e, rule) => {
     e.preventDefault();
@@ -136,9 +142,9 @@ export default function Index() {
     window.open(`/app/export-csv${search}`, "_blank");
   };
 
-  const maxBar = Math.max(1, ...analytics.daily.map((d) => d.count));
+  const productOptions = products.map((p) => ({ value: p.id, label: p.title, collections: p.collections.nodes }));
 
-  const RuleForm = ({ rule }) => (
+  const maxBar = Math.max(1, ...analytics.daily.map((d) => d.count));
     <form style={s.ruleCard} onSubmit={(e) => saveRule(e, rule)}>
       <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
       <div style={s.row2}>
@@ -238,7 +244,7 @@ export default function Index() {
                   <div style={{ ...s.label, marginBottom: 8 }}>Top products</div>
                   {analytics.topProducts.map((p) => (
                     <div key={p.productId} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", padding: "3px 0", borderBottom: "1px solid #f1f2f3" }}>
-                      <span style={{ color: "#6d7175", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "80%" }}>{p.productId.split("/").pop()}</span>
+                      <span style={{ color: "#6d7175", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "80%" }}>{productLabel(p.productId)}</span>
                       <span style={{ fontWeight: 600, color: "#202223" }}>{p.count}</span>
                     </div>
                   ))}
@@ -295,6 +301,7 @@ export default function Index() {
                           <span style={{ fontSize: "0.75rem", color: "#6d7175" }}>{r.company || ""}</span>
                         </div>
                         <div style={s.requestMeta}>{r.customerEmail}</div>
+                        <div style={s.requestMeta}>📦 {productLabel(r.productId)}</div>
                         {r.message && <div style={s.requestMsg}>"{r.message}"</div>}
                       </div>
                       <button style={s.deleteQuoteBtn} type="button" title="Delete" onClick={() => deleteRequest(r.id)}>✕</button>
