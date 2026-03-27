@@ -9,7 +9,7 @@ export const loader = async ({ request }) => {
   if (shop) {
     const shopName = shop.replace(".myshopify.com", "");
     return Response.redirect(
-      `https://admin.shopify.com/store/${shopName}/apps`,
+      `https://admin.shopify.com/store/${shopName}/apps/quotesnap`,
       302
     );
   }
