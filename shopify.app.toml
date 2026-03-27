@@ -48,3 +48,18 @@ prefix = "apps"
 type = "theme"
 name = "storefront-quote"
 handle = "storefront-quote"
+
+[billing]
+  [[billing.plans]]
+  name = "Starter"
+  price = 9.0
+  currency_code = "USD"
+  interval = "EVERY_30_DAYS"
+  trial_days = 7
+
+  [[billing.plans]]
+  name = "Pro"
+  price = 29.0
+  currency_code = "USD"
+  interval = "EVERY_30_DAYS"
+  trial_days = 7
