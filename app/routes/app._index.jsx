@@ -6,7 +6,6 @@ import {
   getQuoteDashboardData,
   handleQuoteDashboardAction,
 } from "../models/quotes.server";
-import styles from "../styles/quotesnap.module.css";
 import { defaultPreviewInput } from "../utils/quote-preview";
 
 export const loader = async ({ request }) => {
@@ -22,405 +21,250 @@ export const action = async ({ request }) => {
   return Response.json(result);
 };
 
+const s = {
+  page: { padding: "20px 24px", maxWidth: 1100, margin: "0 auto", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+  statsRow: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 },
+  statCard: { background: "#fff", border: "1px solid #e3e7ed", borderRadius: 10, padding: "16px 20px" },
+  statNum: { fontSize: "2rem", fontWeight: 800, color: "#111827", display: "block", lineHeight: 1.1 },
+  statLabel: { fontSize: "0.78rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4, display: "block" },
+  grid: { display: "grid", gridTemplateColumns: "1fr 380px", gap: 16, alignItems: "start" },
+  card: { background: "#fff", border: "1px solid #e3e7ed", borderRadius: 10, padding: "20px 22px", marginBottom: 14 },
+  cardTitle: { fontSize: "0.95rem", fontWeight: 700, color: "#111827", marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" },
+  label: { fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 4 },
+  input: { width: "100%", border: "1px solid #e3e7ed", borderRadius: 6, padding: "7px 10px", fontSize: "0.875rem", fontFamily: "inherit", boxSizing: "border-box" },
+  select: { width: "100%", border: "1px solid #e3e7ed", borderRadius: 6, padding: "7px 10px", fontSize: "0.875rem", fontFamily: "inherit", background: "#fff", boxSizing: "border-box" },
+  row2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 },
+  row3: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 },
+  checkRow: { display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap", marginTop: 4, marginBottom: 12 },
+  checkLabel: { display: "flex", alignItems: "center", gap: 6, fontSize: "0.875rem", color: "#374151", cursor: "pointer" },
+  btnPrimary: { background: "#4f46e5", color: "#fff", border: "none", borderRadius: 7, padding: "9px 18px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
+  btnSecondary: { background: "#f3f4f6", color: "#374151", border: "1px solid #e3e7ed", borderRadius: 7, padding: "9px 18px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
+  btnDanger: { background: "#fff", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: 7, padding: "9px 18px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
+  btnRow: { display: "flex", gap: 8, marginTop: 12 },
+  ruleCard: { border: "1px solid #e3e7ed", borderRadius: 8, padding: "16px 18px", marginBottom: 12, background: "#fafafa" },
+  requestCard: { borderBottom: "1px solid #f3f4f6", paddingBottom: 12, marginBottom: 12 },
+  requestName: { fontWeight: 600, fontSize: "0.875rem", color: "#111827" },
+  requestMeta: { fontSize: "0.8rem", color: "#6b7280", marginTop: 2 },
+  requestMsg: { fontSize: "0.8rem", color: "#374151", marginTop: 4, fontStyle: "italic" },
+  emptyState: { color: "#9ca3af", fontSize: "0.875rem", padding: "20px 0", textAlign: "center" },
+  tag: { display: "inline-block", background: "#eef2ff", color: "#4f46e5", borderRadius: 999, padding: "2px 8px", fontSize: "0.72rem", fontWeight: 700 },
+  addBtn: { width: "100%", background: "#fff", border: "2px dashed #e3e7ed", borderRadius: 8, padding: "12px", color: "#6b7280", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", marginTop: 4 },
+  scrollList: { maxHeight: 400, overflowY: "auto", paddingRight: 4 },
+};
+
 export default function Index() {
-  const { shop, rules, requests, products, supportEmail } = useLoaderData();
+  const { shop, rules, requests, products } = useLoaderData();
   const fetcher = useFetcher();
   const { revalidate } = useRevalidator();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
-  const [statusMessage, setStatusMessage] = useState("QuoteSnap is ready.");
+  const [statusMessage, setStatusMessage] = useState(null);
   const [showAddRule, setShowAddRule] = useState(false);
 
   useEffect(() => {
     if (fetcher.data?.message) {
       setStatusMessage(fetcher.data.message);
+      setShowAddRule(false);
       revalidate();
     }
-
-    if (fetcher.data?.error) {
-      setStatusMessage(fetcher.data.error);
-    }
+    if (fetcher.data?.error) setStatusMessage(fetcher.data.error);
   }, [fetcher.data]);
 
   useEffect(() => {
     if (products.length > 0) {
-      const fallbackProductId = products[0].id;
-      setSelectedProductId((current) => current || fallbackProductId);
-      setPreviewInput((current) => ({
-        ...current,
-        productId: current.productId === defaultPreviewInput.productId ? fallbackProductId : current.productId,
-      }));
+      const fallback = products[0].id;
+      setSelectedProductId((c) => c || fallback);
+      setPreviewInput((c) => ({ ...c, productId: c.productId === defaultPreviewInput.productId ? fallback : c.productId }));
     }
   }, [products]);
 
-  const matchedRuleName = useMemo(() => {
-    if (!fetcher.data?.preview?.matchingRuleId) {
-      return "No rule matched";
-    }
+  const productOptions = products.map((p) => ({ value: p.id, label: p.title, collections: p.collections.nodes }));
 
-    return (
-      rules.find((rule) => rule.id === fetcher.data.preview.matchingRuleId)?.name ||
-      "Matched rule"
-    );
-  }, [fetcher.data?.preview?.matchingRuleId, rules]);
-
-  const productOptions = products.map((product) => ({
-    value: product.id,
-    label: product.title,
-    collections: product.collections.nodes,
-  }));
-
-  const saveRule = (event, rule) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    formData.set("intent", "save-rule");
-    formData.set("id", rule.id);
-    fetcher.submit(formData, { method: "POST" });
+  const saveRule = (e, rule) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    fd.set("intent", "save-rule");
+    fd.set("id", rule.id);
+    fetcher.submit(fd, { method: "POST" });
   };
 
-  const deleteRule = (ruleId) => {
-    const formData = new FormData();
-    formData.set("intent", "delete-rule");
-    formData.set("id", ruleId);
-    fetcher.submit(formData, { method: "POST" });
+  const deleteRule = (id) => {
+    const fd = new FormData();
+    fd.set("intent", "delete-rule");
+    fd.set("id", id);
+    fetcher.submit(fd, { method: "POST" });
   };
 
   const runPreview = () => {
-    const formData = new FormData();
-    formData.set("intent", "preview");
-    formData.set("productId", previewInput.productId);
-    formData.set("collectionIds", previewInput.collectionIds);
-    formData.set("tags", previewInput.tags);
-    if (previewInput.loggedIn) {
-      formData.set("loggedIn", "on");
-    }
-    fetcher.submit(formData, { method: "POST" });
+    const fd = new FormData();
+    fd.set("intent", "preview");
+    fd.set("productId", previewInput.productId);
+    fd.set("collectionIds", previewInput.collectionIds);
+    fd.set("tags", previewInput.tags);
+    if (previewInput.loggedIn) fd.set("loggedIn", "on");
+    fetcher.submit(fd, { method: "POST" });
   };
 
-  const seedRequest = () => {
-    const formData = new FormData();
-    formData.set("intent", "seed-request");
-    formData.set("productId", previewInput.productId);
-    fetcher.submit(formData, { method: "POST" });
-  };
+  const RuleForm = ({ rule }) => (
+    <form style={s.ruleCard} onSubmit={(e) => saveRule(e, rule)}>
+      <div style={s.row2}>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Rule name</span>
+          <input style={s.input} name="name" defaultValue={rule.name} placeholder="e.g. Guests request quote" />
+        </label>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Button label</span>
+          <input style={s.input} name="quoteButtonLabel" defaultValue={rule.quoteButtonLabel || "Request a Quote"} />
+        </label>
+      </div>
+      <div style={s.row3}>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Scope</span>
+          <select style={s.select} name="scope" defaultValue={rule.scope || "all_products"}>
+            <option value="all_products">All products</option>
+            <option value="product">Specific product</option>
+            <option value="collection">Collection</option>
+          </select>
+        </label>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Scope value</span>
+          <input style={s.input} name="scopeValue" defaultValue={rule.scopeValue} placeholder="gid://shopify/..." />
+        </label>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Audience</span>
+          <select style={s.select} name="visibility" defaultValue={rule.visibility || "all_visitors"}>
+            <option value="all_visitors">All visitors</option>
+            <option value="guests_only">Guests only</option>
+            <option value="tagged_customers">Tagged customers</option>
+          </select>
+        </label>
+      </div>
+      <div style={s.checkRow}>
+        <label style={s.checkLabel}>
+          <input type="checkbox" name="hidePrice" defaultChecked={rule.hidePrice !== false} />
+          Hide price
+        </label>
+        <label style={s.checkLabel}>
+          <input type="checkbox" name="replaceAddToCart" defaultChecked={rule.replaceAddToCart !== false} />
+          Replace Add to Cart
+        </label>
+        <label style={s.checkLabel}>
+          <input type="checkbox" name="enabled" defaultChecked={rule.enabled !== false} />
+          Enabled
+        </label>
+      </div>
+      <div style={s.btnRow}>
+        <button style={s.btnPrimary} type="submit">Save</button>
+        {rule.id && <button style={s.btnDanger} type="button" onClick={() => deleteRule(rule.id)}>Delete</button>}
+        {!rule.id && <button style={s.btnSecondary} type="button" onClick={() => setShowAddRule(false)}>Cancel</button>}
+      </div>
+    </form>
+  );
 
   return (
     <s-page heading="QuoteSnap" inlineSize="base">
-      <div className={styles.shell}>
-        <section className={styles.hero}>
-          <div>
-            <p className={styles.eyebrow}>Quote request control</p>
-            <h1 className={styles.heroTitle}>Hide pricing, gate access, and test storefront rules before merchants touch their theme.</h1>
-            <p className={styles.heroCopy}>
-              QuoteSnap is connected to <strong>{shop}</strong>. Configure B2B visibility rules, simulate customer states,
-              and review captured quote intent in one place.
-            </p>
+      <div style={s.page}>
+        {statusMessage && (
+          <div style={{ background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8, padding: "10px 16px", marginBottom: 16, fontSize: "0.875rem", color: "#4338ca" }}>
+            {statusMessage}
           </div>
-          <div className={styles.heroActions}>
-            <div className={styles.statusPill}>{statusMessage}</div>
-            <button className={styles.primaryButton} type="button" onClick={seedRequest}>
-              Seed sample quote request
-            </button>
-          </div>
-        </section>
+        )}
 
-        <div className={styles.statsGrid}>
-          <article className={styles.statCard}>
-            <span className={styles.statLabel}>Products loaded</span>
-            <strong className={styles.statValue}>{products.length}</strong>
-            <p className={styles.statHint}>Live product snapshot from the connected Shopify store.</p>
-          </article>
-          <article className={styles.statCard}>
-            <span className={styles.statLabel}>Saved rules</span>
-            <strong className={styles.statValue}>{rules.length}</strong>
-            <p className={styles.statHint}>Shop-scoped QuoteSnap rules stored in Prisma.</p>
-          </article>
-          <article className={styles.statCard}>
-            <span className={styles.statLabel}>Quote requests</span>
-            <strong className={styles.statValue}>{requests.length}</strong>
-            <p className={styles.statHint}>Lead capture records available for review.</p>
-          </article>
-          <article className={styles.statCard}>
-            <span className={styles.statLabel}>Support</span>
-            <strong className={styles.statValueSmall}>{supportEmail}</strong>
-            <p className={styles.statHint}>Current merchant-facing support contact.</p>
-          </article>
+        {/* Stats */}
+        <div style={s.statsRow}>
+          <div style={s.statCard}>
+            <span style={s.statNum}>{rules.length}</span>
+            <span style={s.statLabel}>Active rules</span>
+          </div>
+          <div style={s.statCard}>
+            <span style={s.statNum}>{requests.length}</span>
+            <span style={s.statLabel}>Quote requests</span>
+          </div>
+          <div style={s.statCard}>
+            <span style={s.statNum}>{products.length}</span>
+            <span style={s.statLabel}>Products loaded</span>
+          </div>
         </div>
 
-        <div className={styles.contentGrid}>
-          <section className={styles.card}>
-            <div className={styles.sectionHeader}>
-              <div>
-                <p className={styles.sectionLabel}>Rules</p>
-                <h2 className={styles.sectionTitle}>Quote visibility rules</h2>
+        <div style={s.grid}>
+          {/* Left — Rules */}
+          <div>
+            <div style={s.card}>
+              <div style={s.cardTitle}>
+                <span>Visibility rules</span>
+                <span style={s.tag}>{rules.length} rule{rules.length !== 1 ? "s" : ""}</span>
               </div>
-              <p className={styles.sectionCopy}>
-                Define when pricing disappears, when Add to Cart is replaced, and which audience should see a quote CTA.
-              </p>
-            </div>
 
-            {rules.length === 0 ? <div className={styles.emptyBanner}>No rules yet. Add one below to start testing QuoteSnap.</div> : null}
+              {rules.length === 0 && !showAddRule && (
+                <div style={s.emptyState}>No rules yet. Add your first rule to start hiding prices.</div>
+              )}
 
-            <div className={styles.ruleStack}>
-              {rules.map((rule) => (
-                <form key={rule.id} className={styles.ruleCard} onSubmit={(event) => saveRule(event, rule)}>
-                  <input type="hidden" name="id" value={rule.id} />
-                  <div className={styles.formGridTwo}>
-                    <label className={styles.field}>
-                      <span className={styles.fieldLabel}>Rule name</span>
-                      <input className={styles.input} name="name" defaultValue={rule.name} />
-                    </label>
-                    <label className={styles.field}>
-                      <span className={styles.fieldLabel}>Quote button label</span>
-                      <input className={styles.input} name="quoteButtonLabel" defaultValue={rule.quoteButtonLabel} />
-                    </label>
-                  </div>
+              {rules.map((rule) => <RuleForm key={rule.id} rule={rule} />)}
 
-                  <div className={styles.formGridThree}>
-                    <label className={styles.field}>
-                      <span className={styles.fieldLabel}>Scope</span>
-                      <select className={styles.input} name="scope" defaultValue={rule.scope}>
-                        <option value="all_products">All products</option>
-                        <option value="product">Specific product</option>
-                        <option value="collection">Collection</option>
-                      </select>
-                    </label>
-                    <label className={styles.field}>
-                      <span className={styles.fieldLabel}>Scope value</span>
-                      <input className={styles.input} name="scopeValue" defaultValue={rule.scopeValue} placeholder="gid://shopify/Product/..." />
-                    </label>
-                    <label className={styles.field}>
-                      <span className={styles.fieldLabel}>Audience</span>
-                      <select className={styles.input} name="visibility" defaultValue={rule.visibility}>
-                        <option value="all_visitors">All visitors</option>
-                        <option value="guests_only">Guests only</option>
-                        <option value="tagged_customers">Tagged customers</option>
-                      </select>
-                    </label>
-                  </div>
-
-                  <div className={styles.optionRow}>
-                    <label className={styles.field}>
-                      <span className={styles.fieldLabel}>Customer tag</span>
-                      <input className={styles.input} name="customerTag" defaultValue={rule.customerTag} placeholder="wholesale" />
-                    </label>
-                    <label className={styles.checkboxField}>
-                      <input type="checkbox" name="hidePrice" defaultChecked={rule.hidePrice} />
-                      <span>Hide price</span>
-                    </label>
-                    <label className={styles.checkboxField}>
-                      <input type="checkbox" name="replaceAddToCart" defaultChecked={rule.replaceAddToCart} />
-                      <span>Replace Add to Cart</span>
-                    </label>
-                    <label className={styles.checkboxField}>
-                      <input type="checkbox" name="enabled" defaultChecked={rule.enabled} />
-                      <span>Enabled</span>
-                    </label>
-                  </div>
-
-                  <div className={styles.actionsRow}>
-                    <button className={styles.secondaryButton} type="submit">Save rule</button>
-                    <button className={styles.ghostDangerButton} type="button" onClick={() => deleteRule(rule.id)}>Delete</button>
-                  </div>
-                </form>
-              ))}
-
-              {!showAddRule ? (
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  onClick={() => setShowAddRule(true)}
-                  style={{ alignSelf: "start" }}
-                >
-                  + Add rule
-                </button>
+              {showAddRule ? (
+                <RuleForm rule={{ id: "", name: "", quoteButtonLabel: "Request a Quote", scope: "all_products", scopeValue: "", visibility: "all_visitors", hidePrice: true, replaceAddToCart: true, enabled: true }} />
               ) : (
-              <form className={styles.newRuleCard} onSubmit={(event) => { saveRule(event, { id: "" }); setShowAddRule(false); }}>
-                <div className={styles.newRuleHeader}>
-                  <div>
-                    <p className={styles.sectionLabel}>New rule</p>
-                    <h3 className={styles.subsectionTitle}>Add rule</h3>
-                  </div>
-                  <span className={styles.helperText}>Start with guest-only quote gating, then expand to tags and collections.</span>
-                </div>
-
-                <div className={styles.formGridTwo}>
-                  <label className={styles.field}>
-                    <span className={styles.fieldLabel}>Rule name</span>
-                    <input className={styles.input} name="name" placeholder="Guests request quote" />
-                  </label>
-                  <label className={styles.field}>
-                    <span className={styles.fieldLabel}>Quote button label</span>
-                    <input className={styles.input} name="quoteButtonLabel" defaultValue="Request a Quote" />
-                  </label>
-                </div>
-
-                <div className={styles.formGridThree}>
-                  <label className={styles.field}>
-                    <span className={styles.fieldLabel}>Scope</span>
-                    <select className={styles.input} name="scope" defaultValue="all_products">
-                      <option value="all_products">All products</option>
-                      <option value="product">Specific product</option>
-                      <option value="collection">Collection</option>
-                    </select>
-                  </label>
-                  <label className={styles.field}>
-                    <span className={styles.fieldLabel}>Scope value</span>
-                    <input className={styles.input} name="scopeValue" placeholder="gid://shopify/Collection/..." />
-                  </label>
-                  <label className={styles.field}>
-                    <span className={styles.fieldLabel}>Audience</span>
-                    <select className={styles.input} name="visibility" defaultValue="guests_only">
-                      <option value="all_visitors">All visitors</option>
-                      <option value="guests_only">Guests only</option>
-                      <option value="tagged_customers">Tagged customers</option>
-                    </select>
-                  </label>
-                </div>
-
-                <div className={styles.optionRow}>
-                  <label className={styles.field}>
-                    <span className={styles.fieldLabel}>Customer tag</span>
-                    <input className={styles.input} name="customerTag" placeholder="wholesale" />
-                  </label>
-                  <label className={styles.checkboxField}>
-                    <input type="checkbox" name="hidePrice" defaultChecked />
-                    <span>Hide price</span>
-                  </label>
-                  <label className={styles.checkboxField}>
-                    <input type="checkbox" name="replaceAddToCart" defaultChecked />
-                    <span>Replace Add to Cart</span>
-                  </label>
-                  <label className={styles.checkboxField}>
-                    <input type="checkbox" name="enabled" defaultChecked />
-                    <span>Enabled</span>
-                  </label>
-                </div>
-
-                <div className={styles.actionsRow}>
-                  <button className={styles.primaryButton} type="submit">Create rule</button>
-                  <button className={styles.secondaryButton} type="button" onClick={() => setShowAddRule(false)}>Cancel</button>
-                </div>
-              </form>
+                <button style={s.addBtn} onClick={() => setShowAddRule(true)}>+ Add rule</button>
               )}
             </div>
-          </section>
+          </div>
 
-          <div className={styles.sideColumn}>
-            <section className={styles.card}>
-              <div className={styles.sectionHeader}>
-                <div>
-                  <p className={styles.sectionLabel}>Preview</p>
-                  <h2 className={styles.sectionTitle}>Storefront simulator</h2>
-                </div>
-                <p className={styles.sectionCopy}>Choose a live product, set the buyer state, and preview how QuoteSnap will behave.</p>
-              </div>
-
-              <div className={styles.previewControls}>
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>Product</span>
-                  <select
-                    className={styles.input}
-                    value={selectedProductId}
-                    onChange={(event) => {
-                      const nextValue = event.target.value;
-                      const nextProduct = productOptions.find((product) => product.value === nextValue);
-                      setSelectedProductId(nextValue);
-                      setPreviewInput((current) => ({
-                        ...current,
-                        productId: nextValue,
-                        collectionIds: (nextProduct?.collections || []).map((collection) => collection.id).join(", "),
-                      }));
-                    }}
-                  >
-                    {productOptions.length === 0 ? <option value="">No products found</option> : null}
-                    {productOptions.map((product) => (
-                      <option key={product.value} value={product.value}>
-                        {product.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>Collection IDs</span>
-                  <input
-                    className={styles.input}
-                    value={previewInput.collectionIds}
-                    onChange={(event) => setPreviewInput((current) => ({ ...current, collectionIds: event.target.value }))}
-                  />
-                </label>
-
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>Customer tags</span>
-                  <input
-                    className={styles.input}
-                    value={previewInput.tags}
-                    onChange={(event) => setPreviewInput((current) => ({ ...current, tags: event.target.value }))}
-                  />
-                </label>
-
-                <label className={styles.checkboxField}>
-                  <input
-                    type="checkbox"
-                    checked={previewInput.loggedIn}
-                    onChange={(event) => setPreviewInput((current) => ({ ...current, loggedIn: event.target.checked }))}
-                  />
-                  <span>Shopper is logged in</span>
-                </label>
-
-                <button className={styles.primaryButton} type="button" onClick={runPreview}>Run preview</button>
-              </div>
-
-              <div className={styles.previewResult}>
-                <p className={styles.previewTitle}>{fetcher.data?.preview?.message || "Run a preview to see storefront behavior."}</p>
-                <div className={styles.previewGrid}>
-                  <div>
-                    <span className={styles.previewLabel}>Matched rule</span>
-                    <strong className={styles.previewValue}>{matchedRuleName}</strong>
-                  </div>
-                  <div>
-                    <span className={styles.previewLabel}>Price visible</span>
-                    <strong className={styles.previewValue}>{fetcher.data?.preview ? (fetcher.data.preview.priceVisible ? "Yes" : "No") : "-"}</strong>
-                  </div>
-                  <div>
-                    <span className={styles.previewLabel}>Add to Cart</span>
-                    <strong className={styles.previewValue}>{fetcher.data?.preview ? (fetcher.data.preview.addToCartVisible ? "Yes" : "No") : "-"}</strong>
-                  </div>
-                  <div>
-                    <span className={styles.previewLabel}>Quote CTA</span>
-                    <strong className={styles.previewValue}>{fetcher.data?.preview?.quoteButtonLabel || "No quote button"}</strong>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className={styles.card}>
-              <div className={styles.sectionHeader}>
-                <div>
-                  <p className={styles.sectionLabel}>Leads</p>
-                  <h2 className={styles.sectionTitle}>Recent quote requests</h2>
-                </div>
-              </div>
-
+          {/* Right column */}
+          <div style={{ display: "grid", gap: 14 }}>
+            {/* Quote requests */}
+            <div style={s.card}>
+              <div style={s.cardTitle}>Recent quotes</div>
               {requests.length === 0 ? (
-                <div className={styles.emptyState}>No quote requests stored yet.</div>
+                <div style={s.emptyState}>No quote requests yet.</div>
               ) : (
-                <div className={styles.requestList}>
-                  {requests.map((request) => (
-                    <article key={request.id} className={styles.requestCard}>
-                      <div className={styles.requestHeader}>
-                        <strong>{request.customerName}</strong>
-                        <span>{request.company || "No company"}</span>
+                <div style={s.scrollList}>
+                  {requests.map((r) => (
+                    <div key={r.id} style={s.requestCard}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={s.requestName}>{r.customerName}</span>
+                        <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>{r.company || ""}</span>
                       </div>
-                      <div className={styles.requestMeta}>{request.customerEmail}</div>
-                      <div className={styles.requestMeta}>{request.productId}</div>
-                      <p className={styles.requestMessage}>{request.message || "No message provided"}</p>
-                    </article>
+                      <div style={s.requestMeta}>{r.customerEmail}</div>
+                      {r.message && <div style={s.requestMsg}>"{r.message}"</div>}
+                    </div>
                   ))}
                 </div>
               )}
-            </section>
+            </div>
+
+            {/* Preview */}
+            <div style={s.card}>
+              <div style={s.cardTitle}>Storefront preview</div>
+              <div style={{ display: "grid", gap: 10 }}>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Product</span>
+                  <select style={s.select} value={selectedProductId} onChange={(e) => {
+                    const v = e.target.value;
+                    const p = productOptions.find((x) => x.value === v);
+                    setSelectedProductId(v);
+                    setPreviewInput((c) => ({ ...c, productId: v, collectionIds: (p?.collections || []).map((x) => x.id).join(", ") }));
+                  }}>
+                    {productOptions.length === 0 && <option value="">No products</option>}
+                    {productOptions.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+                  </select>
+                </label>
+                <label style={s.checkLabel}>
+                  <input type="checkbox" checked={previewInput.loggedIn} onChange={(e) => setPreviewInput((c) => ({ ...c, loggedIn: e.target.checked }))} />
+                  Customer is logged in
+                </label>
+                <button style={s.btnPrimary} type="button" onClick={runPreview}>Run preview</button>
+                {fetcher.data?.preview && (
+                  <div style={{ background: "#f9fafb", borderRadius: 8, padding: "12px", fontSize: "0.8rem", marginTop: 4 }}>
+                    <div style={{ marginBottom: 6, fontWeight: 600, color: "#111827" }}>{fetcher.data.preview.message}</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, color: "#374151" }}>
+                      <div><span style={{ color: "#9ca3af" }}>Price visible: </span>{fetcher.data.preview.priceVisible ? "Yes" : "No"}</div>
+                      <div><span style={{ color: "#9ca3af" }}>Add to cart: </span>{fetcher.data.preview.addToCartVisible ? "Yes" : "No"}</div>
+                      <div style={{ gridColumn: "1/-1" }}><span style={{ color: "#9ca3af" }}>CTA: </span>{fetcher.data.preview.quoteButtonLabel || "None"}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
