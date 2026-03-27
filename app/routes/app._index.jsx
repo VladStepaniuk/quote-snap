@@ -145,6 +145,10 @@ export default function Index() {
   const productOptions = products.map((p) => ({ value: p.id, label: p.title, collections: p.collections.nodes }));
 
   const maxBar = Math.max(1, ...analytics.daily.map((d) => d.count));
+
+  const canAddRule = maxRules === null || rules.length < maxRules;
+
+  const RuleForm = ({ rule }) => (
     <form style={s.ruleCard} onSubmit={(e) => saveRule(e, rule)}>
       <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
       <div style={s.row2}>
@@ -200,8 +204,6 @@ export default function Index() {
       </div>
     </form>
   );
-
-  const canAddRule = maxRules === null || rules.length < maxRules;
 
   return (
     <s-page heading="QuoteSnap" inlineSize="base">
