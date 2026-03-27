@@ -36,7 +36,7 @@ export const loader = async ({ request }) => {
   if (plan && plan !== "free" && PLAN_CONFIG[plan]) {
     const config = PLAN_CONFIG[plan];
     const planName = PLANS[plan]?.name;
-    const isTest = process.env.NODE_ENV !== "production";
+    const isTest = process.env.SHOPIFY_BILLING_TEST === "true";
 
     const resp = await admin.graphql(`
       mutation createSub($name: String!, $lineItems: [AppSubscriptionLineItemInput!]!, $returnUrl: URL!, $trialDays: Int, $test: Boolean) {
