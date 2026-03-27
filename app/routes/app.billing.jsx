@@ -30,8 +30,7 @@ export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const plan = url.searchParams.get("plan");
 
-  const shopName = session.shop.replace(".myshopify.com", "");
-  const returnUrl = `https://admin.shopify.com/store/${shopName}/apps/quotesnap/app/billing`;
+  const returnUrl = `https://quote-snap-production.up.railway.app/auth?shop=${session.shop}`;
 
   // Upgrade — create subscription and redirect to Shopify confirmation
   if (plan && plan !== "free" && PLAN_CONFIG[plan]) {
