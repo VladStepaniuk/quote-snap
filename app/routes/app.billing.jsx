@@ -1,5 +1,5 @@
 /**
- * Billing route — uses raw GraphQL appSubscriptionCreate (same as bulk_price_adjuster)
+ * Billing route — GET ?plan=starter|pro triggers subscription, POST handles cancel
  */
 import { redirect, useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
@@ -14,53 +14,77 @@ const PLAN_CONFIG = {
 
 const APP_URL = "https://quote-snap-production.up.railway.app";
 
-export const loader = async ({ request }) => {
-  const { admin } = await authenticate.admin(request);
-
+async function getActiveSub(admin) {
   const resp = await admin.graphql(`
     query {
       currentAppInstallation {
-        activeSubscriptions {
-          name
-          status
-          id
-        }
+        activeSubscriptions { name status id }
       }
     }
   `);
   const data = await resp.json();
   const subs = data?.data?.currentAppInstallation?.activeSubscriptions || [];
-  const active = subs.find((s) => s.status === "ACTIVE");
-  const currentPlan = active
-    ? active.name.toLowerCase().includes("pro") ? "pro" : "starter"
-    : "free";
+  return subs.find((s) => s.status === "ACTIVE") || null;
+}
 
-  return Response.json({ plans: PLANS, currentPlan });
-};
-
-export const action = async ({ request }) => {
+export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
-  const formData = await request.formData();
-  const plan = formData.get("plan");
+  const url = new URL(request.url);
+  const plan = url.searchParams.get("plan");
 
-  // Downgrade to free — cancel active subscription
-  if (!plan || plan === "free") {
+  // If plan param present — create subscription and redirect to Shopify confirmation
+  if (plan && plan !== "free" && PLAN_CONFIG[plan]) {
+    const config = PLAN_CONFIG[plan];
+    const planName = PLANS[plan]?.name;
+    const isTest = process.env.NODE_ENV !== "production";
+
     const resp = await admin.graphql(`
-      query {
-        currentAppInstallation {
-          activeSubscriptions { id status }
+      mutation createSub($name: String!, $lineItems: [AppSubscriptionLineItemInput!]!, $returnUrl: URL!, $trialDays: Int, $test: Boolean) {
+        appSubscriptionCreate(
+          name: $name
+          lineItems: $lineItems
+          returnUrl: $returnUrl
+          trialDays: $trialDays
+          test: $test
+        ) {
+          confirmationUrl
+          appSubscription { id status }
+          userErrors { field message }
         }
       }
-    `);
+    `, {
+      variables: {
+        name: planName,
+        returnUrl: `${APP_URL}/app/billing`,
+        trialDays: config.trialDays,
+        test: isTest,
+        lineItems: [{
+          plan: {
+            appRecurringPricingDetails: {
+              price: { amount: config.amount, currencyCode: "USD" },
+              interval: "EVERY_30_DAYS",
+            },
+          },
+        }],
+      },
+    });
+
     const data = await resp.json();
-    const subs = data?.data?.currentAppInstallation?.activeSubscriptions || [];
-    const active = subs.find((s) => s.status === "ACTIVE");
+    const result = data?.data?.appSubscriptionCreate;
+    if (result?.confirmationUrl) {
+      return redirect(result.confirmationUrl);
+    }
+    // Fall through to page render with error
+  }
+
+  // If plan=free — cancel active subscription
+  if (plan === "free") {
+    const active = await getActiveSub(admin);
     if (active) {
       await admin.graphql(`
         mutation cancel($id: ID!) {
           appSubscriptionCancel(id: $id) {
             appSubscription { id status }
-            userErrors { field message }
           }
         }
       `, { variables: { id: active.id } });
@@ -68,57 +92,23 @@ export const action = async ({ request }) => {
     return redirect("/app");
   }
 
-  const config = PLAN_CONFIG[plan];
-  const planName = PLANS[plan]?.name;
-  if (!config || !planName) return Response.json({ error: "Invalid plan" }, { status: 400 });
+  const active = await getActiveSub(admin);
+  const currentPlan = active
+    ? active.name.toLowerCase().includes("pro") ? "pro" : "starter"
+    : "free";
 
-  const isTest = process.env.NODE_ENV !== "production";
-  const returnUrl = `${APP_URL}/app/billing`;
-
-  const resp = await admin.graphql(`
-    mutation createSub($name: String!, $lineItems: [AppSubscriptionLineItemInput!]!, $returnUrl: URL!, $trialDays: Int, $test: Boolean) {
-      appSubscriptionCreate(
-        name: $name
-        lineItems: $lineItems
-        returnUrl: $returnUrl
-        trialDays: $trialDays
-        test: $test
-      ) {
-        confirmationUrl
-        appSubscription { id status }
-        userErrors { field message }
-      }
-    }
-  `, {
-    variables: {
-      name: planName,
-      returnUrl,
-      trialDays: config.trialDays,
-      test: isTest,
-      lineItems: [{
-        plan: {
-          appRecurringPricingDetails: {
-            price: { amount: config.amount, currencyCode: "USD" },
-            interval: "EVERY_30_DAYS",
-          },
-        },
-      }],
-    },
-  });
-
-  const data = await resp.json();
-  const result = data?.data?.appSubscriptionCreate;
-  if (result?.userErrors?.length) {
-    return Response.json({ error: result.userErrors[0].message }, { status: 400 });
-  }
-  if (result?.confirmationUrl) {
-    return redirect(result.confirmationUrl);
-  }
-  return Response.json({ error: "Failed to create subscription" }, { status: 500 });
+  return Response.json({ plans: PLANS, currentPlan });
 };
 
 export default function BillingPage() {
   const { plans, currentPlan } = useLoaderData();
+  const search = typeof window !== "undefined" ? window.location.search : "";
+  // Preserve shop/host params and add plan param
+  const planHref = (planKey) => {
+    const params = new URLSearchParams(search);
+    params.set("plan", planKey);
+    return `/app/billing?${params.toString()}`;
+  };
 
   const planList = [
     { key: "free", ...plans.free },
@@ -169,25 +159,22 @@ export default function BillingPage() {
                     ✓ Current plan
                   </div>
                 ) : (
-                  <form method="post">
-                    <input type="hidden" name="plan" value={plan.key} />
-                    <button
-                      type="submit"
-                      style={{
-                        width: "100%",
-                        padding: "10px 0",
-                        background: plan.key === "free" ? "#f3f4f6" : "#008060",
-                        color: plan.key === "free" ? "#374151" : "#fff",
-                        border: "none",
-                        borderRadius: 8,
-                        fontWeight: 600,
-                        fontSize: "0.875rem",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {plan.key === "free" ? "Downgrade to Free" : `Upgrade to ${plan.name}`}
-                    </button>
-                  </form>
+                  <a
+                    href={planHref(plan.key)}
+                    style={{
+                      display: "block",
+                      textAlign: "center",
+                      padding: "10px 0",
+                      background: plan.key === "free" ? "#f3f4f6" : "#008060",
+                      color: plan.key === "free" ? "#374151" : "#fff",
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      textDecoration: "none",
+                    }}
+                  >
+                    {plan.key === "free" ? "Downgrade to Free" : `Upgrade to ${plan.name}`}
+                  </a>
                 )}
               </div>
             );
