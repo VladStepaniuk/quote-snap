@@ -28,6 +28,7 @@ export default function Index() {
   const { revalidate } = useRevalidator();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
+  const [statusMessage, setStatusMessage] = useState("QuoteSnap is ready.");
   const [showAddRule, setShowAddRule] = useState(false);
 
   useEffect(() => {
