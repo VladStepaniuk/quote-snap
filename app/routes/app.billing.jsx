@@ -1,11 +1,11 @@
 /**
  * Billing route — GET ?plan=starter|pro triggers subscription via GraphQL
  */
-import { redirect, useLoaderData, useLocation } from "react-router";
+import { redirect, useLoaderData, useLocation, useFetcher } from "react-router";
+import { useEffect } from "react";
 import { authenticate } from "../shopify.server";
-import { PLANS } from "../utils/plans";
 
-export { PLANS };
+import { PLANS } from "../utils/plans";
 
 const PLAN_CONFIG = {
   starter: { amount: "9.00", trialDays: 7 },
@@ -73,7 +73,8 @@ export const loader = async ({ request }) => {
     const result = data?.data?.appSubscriptionCreate;
     console.log("billing result:", JSON.stringify(result));
     if (result?.confirmationUrl) {
-      return redirect(result.confirmationUrl);
+      // Return URL as JSON — client will do window.top.location.href to escape iframe
+      return Response.json({ confirmationUrl: result.confirmationUrl });
     }
   }
 
@@ -100,9 +101,18 @@ export const loader = async ({ request }) => {
   return Response.json({ plans: PLANS, currentPlan });
 };
 
+export { PLANS };
+
 export default function BillingPage() {
   const { plans, currentPlan } = useLoaderData();
   const { search } = useLocation();
+  const fetcher = useFetcher();
+
+  useEffect(() => {
+    if (fetcher.data?.confirmationUrl) {
+      window.top.location.href = fetcher.data.confirmationUrl;
+    }
+  }, [fetcher.data]);
 
   const planHref = (planKey) => {
     const params = new URLSearchParams(search);
@@ -159,22 +169,25 @@ export default function BillingPage() {
                     ✓ Current plan
                   </div>
                 ) : (
-                  <a
-                    href={planHref(plan.key)}
+                  <button
+                    type="button"
+                    disabled={fetcher.state !== "idle"}
+                    onClick={() => fetcher.load(planHref(plan.key))}
                     style={{
-                      display: "block",
-                      textAlign: "center",
+                      width: "100%",
                       padding: "10px 0",
                       background: plan.key === "free" ? "#f3f4f6" : "#008060",
                       color: plan.key === "free" ? "#374151" : "#fff",
+                      border: "none",
                       borderRadius: 8,
                       fontWeight: 600,
                       fontSize: "0.875rem",
-                      textDecoration: "none",
+                      cursor: fetcher.state !== "idle" ? "wait" : "pointer",
+                      opacity: fetcher.state !== "idle" ? 0.7 : 1,
                     }}
                   >
-                    {plan.key === "free" ? "Downgrade to Free" : `Upgrade to ${plan.name}`}
-                  </a>
+                    {fetcher.state !== "idle" ? "Loading…" : plan.key === "free" ? "Downgrade to Free" : `Upgrade to ${plan.name}`}
+                  </button>
                 )}
               </div>
             );
