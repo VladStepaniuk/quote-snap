@@ -30,7 +30,7 @@ export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const plan = url.searchParams.get("plan");
 
-  const returnUrl = `https://quote-snap-production.up.railway.app/app/billing-return`;
+  const returnUrl = `https://quote-snap-production.up.railway.app/app/billing-return?shop=${session.shop}`;
 
   // Upgrade — create subscription and redirect to Shopify confirmation
   if (plan && plan !== "free" && PLAN_CONFIG[plan]) {
