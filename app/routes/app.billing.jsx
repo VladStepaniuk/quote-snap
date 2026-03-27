@@ -71,6 +71,7 @@ export const loader = async ({ request }) => {
 
     const data = await resp.json();
     const result = data?.data?.appSubscriptionCreate;
+    console.log("billing result:", JSON.stringify(result));
     if (result?.confirmationUrl) {
       return redirect(result.confirmationUrl);
     }
