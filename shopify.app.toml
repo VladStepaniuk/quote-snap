@@ -37,7 +37,7 @@ use_legacy_install_flow = false
 [auth]
 redirect_urls = [
   "https://quote-snap-production.up.railway.app/auth/callback",
-  "https://quote-snap-production.up.railway.app/app/billing-return"
+  "https://quote-snap-production.up.railway.app/billing-return"
 ]
 
 [app_proxy]
