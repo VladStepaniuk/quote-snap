@@ -28,7 +28,7 @@ async function getActiveSub(admin) {
 }
 
 export const loader = async ({ request }) => {
-  const { admin } = await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
   const url = new URL(request.url);
   const plan = url.searchParams.get("plan");
 
@@ -55,7 +55,7 @@ export const loader = async ({ request }) => {
     `, {
       variables: {
         name: planName,
-        returnUrl: `${APP_URL}/app/billing`,
+        returnUrl: `${APP_URL}/app/billing?shop=${session.shop}`,
         trialDays: config.trialDays,
         test: isTest,
         lineItems: [{
