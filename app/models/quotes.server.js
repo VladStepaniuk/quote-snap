@@ -145,7 +145,7 @@ export async function getQuoteDashboardData({ shop, admin }) {
     prisma.quoteRequest.findMany({
       where: { shop },
       orderBy: { createdAt: "desc" },
-      take: 12,
+      take: 200,
     }),
     getProductSnapshot(admin),
   ]);
