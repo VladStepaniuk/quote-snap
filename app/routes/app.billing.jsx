@@ -1,7 +1,7 @@
 /**
  * Billing route — GET ?plan=starter|pro triggers subscription via GraphQL
  */
-import { redirect, useLoaderData } from "react-router";
+import { redirect, useLoaderData, useLocation } from "react-router";
 import { authenticate } from "../shopify.server";
 import { PLANS } from "../utils/plans";
 
@@ -101,9 +101,10 @@ export const loader = async ({ request }) => {
 
 export default function BillingPage() {
   const { plans, currentPlan } = useLoaderData();
+  const { search } = useLocation();
 
   const planHref = (planKey) => {
-    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+    const params = new URLSearchParams(search);
     params.set("plan", planKey);
     return `/app/billing?${params.toString()}`;
   };
