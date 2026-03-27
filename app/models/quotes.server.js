@@ -103,6 +103,12 @@ async function deleteRule(shop, formData) {
   return { ok: true, message: "Rule deleted." };
 }
 
+async function deleteRequest(shop, formData) {
+  const id = getTrimmedString(formData, "id");
+  await prisma.quoteRequest.deleteMany({ where: { id, shop } });
+  return { ok: true, message: "Quote request deleted." };
+}
+
 async function seedRequest(shop, formData) {
   await prisma.quoteRequest.create({
     data: {
@@ -161,6 +167,8 @@ export async function handleQuoteDashboardAction({ shop, formData }) {
       return saveRule(shop, formData);
     case "delete-rule":
       return deleteRule(shop, formData);
+    case "delete-request":
+      return deleteRequest(shop, formData);
     case "seed-request":
       return seedRequest(shop, formData);
     case "preview":

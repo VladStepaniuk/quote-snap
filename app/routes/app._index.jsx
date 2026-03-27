@@ -22,34 +22,38 @@ export const action = async ({ request }) => {
 };
 
 const s = {
-  page: { padding: "20px 24px", maxWidth: 1100, margin: "0 auto", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+  page: { padding: "20px 24px", maxWidth: 1100, margin: "0 auto", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#202223" },
   statsRow: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 },
-  statCard: { background: "#fff", border: "1px solid #e3e7ed", borderRadius: 10, padding: "16px 20px" },
-  statNum: { fontSize: "2rem", fontWeight: 800, color: "#111827", display: "block", lineHeight: 1.1 },
-  statLabel: { fontSize: "0.78rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4, display: "block" },
+  statCard: { background: "#fff", border: "1px solid #e1e3e5", borderRadius: 8, padding: "16px 20px" },
+  statNum: { fontSize: "2rem", fontWeight: 800, color: "#202223", display: "block", lineHeight: 1.1 },
+  statLabel: { fontSize: "0.78rem", fontWeight: 600, color: "#6d7175", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4, display: "block" },
   grid: { display: "grid", gridTemplateColumns: "1fr 380px", gap: 16, alignItems: "start" },
-  card: { background: "#fff", border: "1px solid #e3e7ed", borderRadius: 10, padding: "20px 22px", marginBottom: 14 },
-  cardTitle: { fontSize: "0.95rem", fontWeight: 700, color: "#111827", marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" },
-  label: { fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 4 },
-  input: { width: "100%", border: "1px solid #e3e7ed", borderRadius: 6, padding: "7px 10px", fontSize: "0.875rem", fontFamily: "inherit", boxSizing: "border-box" },
-  select: { width: "100%", border: "1px solid #e3e7ed", borderRadius: 6, padding: "7px 10px", fontSize: "0.875rem", fontFamily: "inherit", background: "#fff", boxSizing: "border-box" },
+  card: { background: "#fff", border: "1px solid #e1e3e5", borderRadius: 8, padding: "20px", marginBottom: 14 },
+  cardTitle: { fontSize: "0.9rem", fontWeight: 700, color: "#202223", marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" },
+  label: { fontSize: "0.75rem", fontWeight: 600, color: "#6d7175", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 4 },
+  input: { width: "100%", border: "1px solid #c9cccf", borderRadius: 4, padding: "7px 10px", fontSize: "0.875rem", fontFamily: "inherit", boxSizing: "border-box", color: "#202223" },
+  select: { width: "100%", border: "1px solid #c9cccf", borderRadius: 4, padding: "7px 10px", fontSize: "0.875rem", fontFamily: "inherit", background: "#fff", boxSizing: "border-box", color: "#202223" },
   row2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 },
   row3: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 },
   checkRow: { display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap", marginTop: 4, marginBottom: 12 },
-  checkLabel: { display: "flex", alignItems: "center", gap: 6, fontSize: "0.875rem", color: "#374151", cursor: "pointer" },
-  btnPrimary: { background: "#4f46e5", color: "#fff", border: "none", borderRadius: 7, padding: "9px 18px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
-  btnSecondary: { background: "#f3f4f6", color: "#374151", border: "1px solid #e3e7ed", borderRadius: 7, padding: "9px 18px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
-  btnDanger: { background: "#fff", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: 7, padding: "9px 18px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
+  checkLabel: { display: "flex", alignItems: "center", gap: 6, fontSize: "0.875rem", color: "#202223", cursor: "pointer" },
+  btnPrimary: { background: "#008060", color: "#fff", border: "none", borderRadius: 4, padding: "8px 16px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
+  btnSecondary: { background: "#fff", color: "#202223", border: "1px solid #c9cccf", borderRadius: 4, padding: "8px 16px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
+  btnDanger: { background: "#fff", color: "#d82c0d", border: "1px solid #d82c0d", borderRadius: 4, padding: "8px 16px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
   btnRow: { display: "flex", gap: 8, marginTop: 12 },
-  ruleCard: { border: "1px solid #e3e7ed", borderRadius: 8, padding: "16px 18px", marginBottom: 12, background: "#fafafa" },
-  requestCard: { borderBottom: "1px solid #f3f4f6", paddingBottom: 12, marginBottom: 12 },
-  requestName: { fontWeight: 600, fontSize: "0.875rem", color: "#111827" },
-  requestMeta: { fontSize: "0.8rem", color: "#6b7280", marginTop: 2 },
-  requestMsg: { fontSize: "0.8rem", color: "#374151", marginTop: 4, fontStyle: "italic" },
-  emptyState: { color: "#9ca3af", fontSize: "0.875rem", padding: "20px 0", textAlign: "center" },
-  tag: { display: "inline-block", background: "#eef2ff", color: "#4f46e5", borderRadius: 999, padding: "2px 8px", fontSize: "0.72rem", fontWeight: 700 },
-  addBtn: { width: "100%", background: "#fff", border: "2px dashed #e3e7ed", borderRadius: 8, padding: "12px", color: "#6b7280", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", marginTop: 4 },
-  scrollList: { maxHeight: 400, overflowY: "auto", paddingRight: 4 },
+  ruleCard: { border: "1px solid #e1e3e5", borderRadius: 6, padding: "16px", marginBottom: 10, background: "#f6f6f7" },
+  ruleCardTitle: { fontSize: "0.8rem", fontWeight: 700, color: "#6d7175", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 },
+  requestCard: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid #f1f2f3", paddingBottom: 10, marginBottom: 10 },
+  requestInfo: { flex: 1 },
+  requestName: { fontWeight: 600, fontSize: "0.875rem", color: "#202223" },
+  requestMeta: { fontSize: "0.8rem", color: "#6d7175", marginTop: 2 },
+  requestMsg: { fontSize: "0.8rem", color: "#202223", marginTop: 4, fontStyle: "italic" },
+  emptyState: { color: "#8c9196", fontSize: "0.875rem", padding: "20px 0", textAlign: "center" },
+  tag: { display: "inline-block", background: "#f2f7fe", color: "#1f5199", borderRadius: 4, padding: "2px 8px", fontSize: "0.72rem", fontWeight: 600 },
+  addBtn: { width: "100%", background: "#fff", border: "1px dashed #c9cccf", borderRadius: 6, padding: "10px", color: "#6d7175", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", marginTop: 4 },
+  scrollList: { maxHeight: 380, overflowY: "auto", paddingRight: 4 },
+  deleteQuoteBtn: { background: "none", border: "none", color: "#8c9196", cursor: "pointer", fontSize: "1rem", padding: "0 4px", lineHeight: 1, flexShrink: 0 },
+  notice: { background: "#f0f8f5", border: "1px solid #b5e0d3", borderRadius: 6, padding: "10px 14px", marginBottom: 16, fontSize: "0.875rem", color: "#108043" },
 };
 
 export default function Index() {
@@ -105,8 +109,16 @@ export default function Index() {
     fetcher.submit(fd, { method: "POST" });
   };
 
+  const deleteRequest = (id) => {
+    const fd = new FormData();
+    fd.set("intent", "delete-request");
+    fd.set("id", id);
+    fetcher.submit(fd, { method: "POST" });
+  };
+
   const RuleForm = ({ rule }) => (
     <form style={s.ruleCard} onSubmit={(e) => saveRule(e, rule)}>
+      <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
       <div style={s.row2}>
         <label style={{ display: "grid", gap: 4 }}>
           <span style={s.label}>Rule name</span>
@@ -165,7 +177,7 @@ export default function Index() {
     <s-page heading="QuoteSnap" inlineSize="base">
       <div style={s.page}>
         {statusMessage && (
-          <div style={{ background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8, padding: "10px 16px", marginBottom: 16, fontSize: "0.875rem", color: "#4338ca" }}>
+          <div style={s.notice}>
             {statusMessage}
           </div>
         )}
@@ -220,12 +232,15 @@ export default function Index() {
                 <div style={s.scrollList}>
                   {requests.map((r) => (
                     <div key={r.id} style={s.requestCard}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span style={s.requestName}>{r.customerName}</span>
-                        <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>{r.company || ""}</span>
+                      <div style={s.requestInfo}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <span style={s.requestName}>{r.customerName}</span>
+                          <span style={{ fontSize: "0.75rem", color: "#6d7175" }}>{r.company || ""}</span>
+                        </div>
+                        <div style={s.requestMeta}>{r.customerEmail}</div>
+                        {r.message && <div style={s.requestMsg}>"{r.message}"</div>}
                       </div>
-                      <div style={s.requestMeta}>{r.customerEmail}</div>
-                      {r.message && <div style={s.requestMsg}>"{r.message}"</div>}
+                      <button style={s.deleteQuoteBtn} type="button" title="Delete" onClick={() => deleteRequest(r.id)}>✕</button>
                     </div>
                   ))}
                 </div>
