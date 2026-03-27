@@ -28,7 +28,7 @@ export default function Index() {
   const { revalidate } = useRevalidator();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
-  const [statusMessage, setStatusMessage] = useState("QuoteSnap is ready.");
+  const [showAddRule, setShowAddRule] = useState(false);
 
   useEffect(() => {
     if (fetcher.data?.message) {
@@ -224,7 +224,17 @@ export default function Index() {
                 </form>
               ))}
 
-              <form className={styles.newRuleCard} onSubmit={(event) => saveRule(event, { id: "" })}>
+              {!showAddRule ? (
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={() => setShowAddRule(true)}
+                  style={{ alignSelf: "start" }}
+                >
+                  + Add rule
+                </button>
+              ) : (
+              <form className={styles.newRuleCard} onSubmit={(event) => { saveRule(event, { id: "" }); setShowAddRule(false); }}>
                 <div className={styles.newRuleHeader}>
                   <div>
                     <p className={styles.sectionLabel}>New rule</p>
@@ -288,8 +298,10 @@ export default function Index() {
 
                 <div className={styles.actionsRow}>
                   <button className={styles.primaryButton} type="submit">Create rule</button>
+                  <button className={styles.secondaryButton} type="button" onClick={() => setShowAddRule(false)}>Cancel</button>
                 </div>
               </form>
+              )}
             </div>
           </section>
 
