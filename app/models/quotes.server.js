@@ -66,8 +66,10 @@ async function getCurrentPlan(admin) {
     `);
     const data = await resp.json();
     const subs = data?.data?.currentAppInstallation?.activeSubscriptions || [];
+    console.log("[getCurrentPlan] subs:", JSON.stringify(subs));
     const active = subs.find((s) => s.status === "ACTIVE");
     if (!active) return "free";
+    console.log("[getCurrentPlan] active:", active.name, active.status);
     return active.name.toLowerCase().includes("pro") ? "pro" : "starter";
   } catch {
     return "free";
