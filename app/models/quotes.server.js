@@ -71,7 +71,8 @@ async function getCurrentPlan(admin) {
     if (!active) return "free";
     console.log("[getCurrentPlan] active:", active.name, active.status);
     return active.name.toLowerCase().includes("pro") ? "pro" : "starter";
-  } catch {
+  } catch (e) {
+    console.error("[getCurrentPlan] error:", e?.message || e);
     return "free";
   }
 }
