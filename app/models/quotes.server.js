@@ -4,7 +4,7 @@ import { getMaxRules } from "../utils/plans.js";
 
 const quoteSnapProductSnapshotQuery = `#graphql
   query QuoteSnapProductSnapshot {
-    products(first: 12) {
+    products(first: 250) {
       nodes {
         id
         title
