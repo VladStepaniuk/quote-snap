@@ -43,5 +43,8 @@ export const PLANS = {
 
 export function getMaxRules(planName) {
   const key = (planName || "free").toLowerCase();
-  return PLANS[key]?.maxRules ?? PLANS.free.maxRules;
+  if (!(key in PLANS)) return PLANS.free.maxRules;
+  // null means unlimited — do NOT fall back with ??
+  const plan = PLANS[key];
+  return plan.maxRules !== undefined ? plan.maxRules : PLANS.free.maxRules;
 }
