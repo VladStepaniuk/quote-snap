@@ -81,6 +81,7 @@ model QuoteRequest {
   company       String   @default("")
   message       String   @default("")
   status        String   @default("new")
+  notes         String   @default("")
   createdAt     DateTime @default(now())
 
   @@index([shop])

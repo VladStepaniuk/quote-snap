@@ -198,7 +198,8 @@ export async function getQuoteDashboardData({ shop, admin, billing }) {
 
   const maxRules = getMaxRules(currentPlan);
 
-  return { shop, rules, requests, products, currentPlan, maxRules, supportEmail: "support@quotesnap.app" };
+  const newCount = requests.filter((r) => r.status === "new").length;
+  return { shop, rules, requests, products, currentPlan, maxRules, newCount, supportEmail: "support@quotesnap.app" };
 }
 
 export async function handleQuoteDashboardAction({ shop, formData, admin }) {

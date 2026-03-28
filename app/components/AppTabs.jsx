@@ -2,11 +2,12 @@ import { useLocation } from "react-router";
 
 const TABS = [
   { label: "Dashboard", to: "/app" },
+  { label: "Inbox", to: "/app/inbox" },
   { label: "Billing", to: "/app/billing" },
   { label: "Settings", to: "/app/settings" },
 ];
 
-export function AppTabs() {
+export function AppTabs({ newCount }) {
   const { pathname, search } = useLocation();
 
   return (
@@ -33,9 +34,17 @@ export function AppTabs() {
               borderBottom: isActive ? "2px solid #4f46e5" : "2px solid transparent",
               marginBottom: -1,
               transition: "color 120ms ease",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
             }}
           >
             {label}
+            {label === "Inbox" && newCount > 0 && (
+              <span style={{ background: "#d72c0d", color: "#fff", borderRadius: 20, padding: "1px 7px", fontSize: "0.72rem", fontWeight: 700 }}>
+                {newCount}
+              </span>
+            )}
           </a>
         );
       })}
