@@ -230,7 +230,8 @@ export default function Index() {
         <div style={s.grid}>
           {/* Left — Rules */}
           <div>
-            {/* Analytics chart */}
+            {/* Analytics chart — Pro only */}
+            {currentPlan === "pro" ? (
             <div style={s.card}>
               <div style={s.cardTitle}>Quote requests — last 14 days</div>
               <div style={s.barWrap}>
@@ -253,6 +254,14 @@ export default function Index() {
                 </div>
               )}
             </div>
+            ) : (
+            <div style={{ ...s.card, textAlign: "center", padding: "24px", color: "#6d7175" }}>
+              <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>📊</div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>Analytics — Pro plan</div>
+              <div style={{ fontSize: "0.85rem", marginBottom: 12 }}>Upgrade to Pro to see quote trends and top products.</div>
+              <a href={`?page=billing${search ? "&" + search.slice(1) : ""}`} style={{ color: "#008060", fontWeight: 600, fontSize: "0.85rem" }}>Upgrade to Pro →</a>
+            </div>
+            )}
 
             {/* Rules */}
             <div style={s.card}>
