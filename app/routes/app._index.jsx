@@ -285,7 +285,7 @@ export default function Index() {
             <div style={s.card}>
               <div style={s.cardTitle}>
                 <span>Recent quotes</span>
-                {requests.length > 0 && (
+                {requests.length > 0 && currentPlan !== "free" && (
                   <button style={{ ...s.btnSecondary, padding: "4px 10px", fontSize: "0.78rem" }} type="button" onClick={exportCsv}>
                     ↓ CSV
                   </button>
