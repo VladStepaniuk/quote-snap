@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useFetcher, useLoaderData, useRevalidator } from "react-router";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
-import { AppTabs } from "../components/AppTabs";
 
 const STATUS_COLORS = {
   new: { bg: "#fff3cd", color: "#856404", label: "New" },
@@ -97,12 +96,11 @@ export default function InboxPage() {
   };
 
   const s = {
-    page: { fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: "#f4f6f8", minHeight: "100vh", padding: "0 0 40px" },
-    inner: { maxWidth: 900, margin: "0 auto", padding: "0 20px" },
-    header: { padding: "20px 20px 0", maxWidth: 900, margin: "0 auto" },
+    wrap: { padding: "20px", maxWidth: 960, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+    pageHeader: { marginBottom: 16 },
     title: { fontSize: "1.3rem", fontWeight: 700, color: "#202223", marginBottom: 4 },
     subtitle: { fontSize: "0.85rem", color: "#6d7175" },
-    locked: { textAlign: "center", padding: "60px 20px", background: "#fff", borderRadius: 10, marginTop: 20, border: "1px solid #e3e7ed" },
+    locked: { textAlign: "center", padding: "60px 20px", background: "#fff", borderRadius: 10, border: "1px solid #e3e7ed" },
     lockedIcon: { fontSize: "2.5rem", marginBottom: 12 },
     lockedTitle: { fontWeight: 700, fontSize: "1.1rem", marginBottom: 8, color: "#202223" },
     lockedDesc: { color: "#6d7175", fontSize: "0.9rem", marginBottom: 16 },
@@ -132,92 +130,85 @@ export default function InboxPage() {
 
   if (currentPlan === "free") {
     return (
-      <div style={s.page}>
-        <div style={s.header}><div style={s.title}>Quote Inbox</div></div>
-        <AppTabs />
-        <div style={s.inner}>
-          <div style={s.locked}>
-            <div style={s.lockedIcon}>📬</div>
-            <div style={s.lockedTitle}>Premium Quote Inbox</div>
-            <div style={s.lockedDesc}>Upgrade to Starter or Pro to access the full quote inbox with status tracking, reply notes, and filters.</div>
-            <a href="/app/billing" style={s.btnPrimary}>Upgrade plan →</a>
-          </div>
+      <div style={s.wrap}>
+        <div style={s.locked}>
+          <div style={s.lockedIcon}>📬</div>
+          <div style={s.lockedTitle}>Premium Quote Inbox</div>
+          <div style={s.lockedDesc}>Upgrade to Starter or Pro to access the full quote inbox with status tracking, reply notes, and filters.</div>
+          <a href="/app/billing" style={s.btnPrimary}>Upgrade plan →</a>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={s.page}>
-      <div style={s.header}>
+    <div style={s.wrap}>
+      <div style={s.pageHeader}>
         <div style={s.title}>Quote Inbox {newCount > 0 && <span style={{ background: "#d72c0d", color: "#fff", borderRadius: 20, padding: "2px 8px", fontSize: "0.75rem", marginLeft: 6 }}>{newCount} new</span>}</div>
         <div style={s.subtitle}>{requests.length} total quote request{requests.length !== 1 ? "s" : ""}</div>
       </div>
-      <AppTabs />
-      <div style={s.inner}>
-        <div style={s.filters}>
-          {["all", "new", "replied", "closed"].map((f) => (
-            <button key={f} style={s.filterBtn(filter === f)} onClick={() => setFilter(f)}>
-              {f === "all" ? "All" : STATUS_COLORS[f]?.label} {f !== "all" && `(${requests.filter((r) => r.status === f).length})`}
-            </button>
-          ))}
-        </div>
-
-        {filtered.length === 0 ? (
-          <div style={s.empty}>No quotes in this filter.</div>
-        ) : (
-          <div style={s.layout}>
-            {/* Left: list */}
-            <div style={s.list}>
-              {filtered.map((r) => (
-                <div key={r.id} style={s.card(selected?.id === r.id)} onClick={() => selectRequest(r)}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-                    <div style={s.cardName}>{r.customerName}</div>
-                    <span style={s.badge(r.status)}>{STATUS_COLORS[r.status]?.label || r.status}</span>
-                  </div>
-                  <div style={s.cardMeta}>{r.customerEmail} · {new Date(r.createdAt).toLocaleDateString()}</div>
-                  <div style={s.cardMsg}>{r.message || "(no message)"}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Right: detail */}
-            {selected ? (
-              <div style={s.detail}>
-                <div style={s.detailName}>{selected.customerName}</div>
-                <div style={s.detailMeta}>{selected.customerEmail}{selected.company ? ` · ${selected.company}` : ""} · {new Date(selected.createdAt).toLocaleString()}</div>
-                <div style={s.detailMsg}>{selected.message || "(no message)"}</div>
-
-                <span style={s.label}>Status</span>
-                <div style={s.statusRow}>
-                  {["new", "replied", "closed"].map((st) => (
-                    <button key={st} style={s.statusBtn(selected.status === st)} onClick={() => updateStatus(selected.id, st)}>
-                      {STATUS_COLORS[st].label}
-                    </button>
-                  ))}
-                </div>
-
-                <span style={s.label}>Internal notes</span>
-                <textarea
-                  style={s.textarea}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add notes, reply drafts, or follow-up reminders..."
-                />
-
-                <div style={s.btnRow}>
-                  <button style={s.btnSave} onClick={() => saveNotes(selected.id)}>Save notes</button>
-                  <button style={s.btnDelete} onClick={() => deleteRequest(selected.id)}>Delete</button>
-                </div>
-              </div>
-            ) : (
-              <div style={{ ...s.detail, display: "flex", alignItems: "center", justifyContent: "center", color: "#6d7175", fontSize: "0.9rem" }}>
-                ← Select a quote to view details
-              </div>
-            )}
-          </div>
-        )}
+      <div style={s.filters}>
+        {["all", "new", "replied", "closed"].map((f) => (
+          <button key={f} style={s.filterBtn(filter === f)} onClick={() => setFilter(f)}>
+            {f === "all" ? "All" : STATUS_COLORS[f]?.label} {f !== "all" && `(${requests.filter((r) => r.status === f).length})`}
+          </button>
+        ))}
       </div>
+
+      {filtered.length === 0 ? (
+        <div style={s.empty}>No quotes in this filter.</div>
+      ) : (
+        <div style={s.layout}>
+          {/* Left: list */}
+          <div style={s.list}>
+            {filtered.map((r) => (
+              <div key={r.id} style={s.card(selected?.id === r.id)} onClick={() => selectRequest(r)}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                  <div style={s.cardName}>{r.customerName}</div>
+                  <span style={s.badge(r.status)}>{STATUS_COLORS[r.status]?.label || r.status}</span>
+                </div>
+                <div style={s.cardMeta}>{r.customerEmail} · {new Date(r.createdAt).toLocaleDateString()}</div>
+                <div style={s.cardMsg}>{r.message || "(no message)"}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Right: detail */}
+          {selected ? (
+            <div style={s.detail}>
+              <div style={s.detailName}>{selected.customerName}</div>
+              <div style={s.detailMeta}>{selected.customerEmail}{selected.company ? ` · ${selected.company}` : ""} · {new Date(selected.createdAt).toLocaleString()}</div>
+              <div style={s.detailMsg}>{selected.message || "(no message)"}</div>
+
+              <span style={s.label}>Status</span>
+              <div style={s.statusRow}>
+                {["new", "replied", "closed"].map((st) => (
+                  <button key={st} style={s.statusBtn(selected.status === st)} onClick={() => updateStatus(selected.id, st)}>
+                    {STATUS_COLORS[st].label}
+                  </button>
+                ))}
+              </div>
+
+              <span style={s.label}>Internal notes</span>
+              <textarea
+                style={s.textarea}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add notes, reply drafts, or follow-up reminders..."
+              />
+
+              <div style={s.btnRow}>
+                <button style={s.btnSave} onClick={() => saveNotes(selected.id)}>Save notes</button>
+                <button style={s.btnDelete} onClick={() => deleteRequest(selected.id)}>Delete</button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ ...s.detail, display: "flex", alignItems: "center", justifyContent: "center", color: "#6d7175", fontSize: "0.9rem" }}>
+              ← Select a quote to view details
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
