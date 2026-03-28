@@ -259,7 +259,7 @@ export default function Index() {
               <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>📊</div>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>Analytics — Pro plan</div>
               <div style={{ fontSize: "0.85rem", marginBottom: 12 }}>Upgrade to Pro to see quote trends and top products.</div>
-              <a href={`?page=billing${search ? "&" + search.slice(1) : ""}`} style={{ color: "#008060", fontWeight: 600, fontSize: "0.85rem" }}>Upgrade to Pro →</a>
+              <a href="?page=billing" style={{ color: "#008060", fontWeight: 600, fontSize: "0.85rem" }}>Upgrade to Pro →</a>
             </div>
             )}
 
