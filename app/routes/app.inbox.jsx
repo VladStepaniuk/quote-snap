@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useFetcher, useLoaderData, useRevalidator } from "react-router";
 import { authenticate } from "../shopify.server";
-import { prisma } from "../db.server";
+import prisma from "../db.server";
 import { AppTabs } from "../components/AppTabs";
 
 const STATUS_COLORS = {
