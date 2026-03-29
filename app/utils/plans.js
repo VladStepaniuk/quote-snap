@@ -33,6 +33,7 @@ export const PLANS = {
     maxRules: null, // unlimited
     features: [
       "Unlimited rules",
+      "Premium inbox",
       "Email notifications",
       "Analytics",
       "CSV export",
