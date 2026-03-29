@@ -1,4 +1,4 @@
-import { useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher, useLocation } from "react-router";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 
@@ -81,6 +81,8 @@ export default function SettingsPage() {
   const data = useLoaderData();
   const { currentPlan } = data;
   const fetcher = useFetcher();
+  const { search } = useLocation();
+  const billingUrl = `/app/billing${search}`;
   const saved = fetcher.data?.ok;
   const isPro = currentPlan === "pro";
 
@@ -141,7 +143,7 @@ export default function SettingsPage() {
             <div style={s.lockedIcon}>🎨</div>
             <div style={s.lockedTitle}>Button customization — Pro plan</div>
             <div style={s.lockedDesc}>Customize button colours, label, and border radius to match your brand.</div>
-            <a href="/app/billing" style={s.upgradeLink}>Upgrade to Pro →</a>
+            <a href={billingUrl} style={s.upgradeLink}>Upgrade to Pro →</a>
           </div>
         )}
 
@@ -174,7 +176,7 @@ export default function SettingsPage() {
             <div style={s.lockedIcon}>📝</div>
             <div style={s.lockedTitle}>Form customization — Pro plan</div>
             <div style={s.lockedDesc}>Set a custom modal title, success message, submit label, and toggle the company field.</div>
-            <a href="/app/billing" style={s.upgradeLink}>Upgrade to Pro →</a>
+            <a href={billingUrl} style={s.upgradeLink}>Upgrade to Pro →</a>
           </div>
         )}
 
