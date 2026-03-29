@@ -128,26 +128,30 @@
 
   function applyModalCustomization(customization = {}) {
     if (!modal) return;
-    const title = customization.formTitle;
-    const submitLabel = customization.formSubmitLabel;
-    const successMsg = customization.formSuccessMsg;
-    const showCompany = customization.formShowCompany;
+    const { formTitle, formSubmitLabel, formSuccessMsg, formShowCompany, buttonBgColor, buttonTextColor, buttonBorderRadius } = customization;
 
-    if (title) {
+    if (formTitle) {
       const titleEl = modal.querySelector(".quotesnap-modal__title");
-      if (titleEl) titleEl.textContent = title;
+      if (titleEl) titleEl.textContent = formTitle;
     }
-    if (submitLabel) {
+    if (formSubmitLabel) {
       const submitText = modal.querySelector(".quotesnap-form__submit-text");
-      if (submitText) submitText.textContent = submitLabel;
+      if (submitText) submitText.textContent = formSubmitLabel;
     }
-    if (successMsg) {
+    if (formSuccessMsg) {
       const successText = modal.querySelector(".quotesnap-success__message");
-      if (successText) successText.textContent = successMsg;
+      if (successText) successText.textContent = formSuccessMsg;
     }
-    if (showCompany === false) {
+    if (formShowCompany === false) {
       const companyField = modal.querySelector(".quotesnap-field--company");
       if (companyField) companyField.style.display = "none";
+    }
+    // Apply button colours/radius to the modal submit button too
+    const submitBtn = modal.querySelector(".quotesnap-form__submit");
+    if (submitBtn) {
+      if (buttonBgColor) submitBtn.style.background = buttonBgColor;
+      if (buttonTextColor) submitBtn.style.color = buttonTextColor;
+      if (buttonBorderRadius !== undefined) submitBtn.style.borderRadius = buttonBorderRadius + "px";
     }
   }
 
