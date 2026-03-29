@@ -77,6 +77,9 @@ model ShopSettings {
   formSuccessMsg    String   @default("Thank you! We'll be in touch soon.")
   formShowCompany   Boolean  @default(true)
   formSubmitLabel   String   @default("Submit Request")
+  // Font customization
+  fontFamily        String   @default("inherit")
+  fontSize          String   @default("16")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }

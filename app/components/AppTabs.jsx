@@ -3,6 +3,7 @@ import { useLocation } from "react-router";
 const TABS = [
   { label: "Dashboard", to: "/app" },
   { label: "Inbox", to: "/app/inbox" },
+  { label: "Customization", to: "/app/customization" },
   { label: "Billing", to: "/app/billing" },
   { label: "Settings", to: "/app/settings" },
 ];

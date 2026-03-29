@@ -128,7 +128,9 @@
 
   function applyModalCustomization(customization = {}) {
     if (!modal) return;
-    const { formTitle, formSubmitLabel, formSuccessMsg, formShowCompany, buttonBgColor, buttonTextColor, buttonBorderRadius } = customization;
+    const { formTitle, formSubmitLabel, formSuccessMsg, formShowCompany,
+            buttonBgColor, buttonTextColor, buttonBorderRadius,
+            fontFamily, fontSize } = customization;
 
     if (formTitle) {
       const titleEl = modal.querySelector(".quotesnap-modal__title");
@@ -152,6 +154,13 @@
       if (buttonBgColor) submitBtn.style.background = buttonBgColor;
       if (buttonTextColor) submitBtn.style.color = buttonTextColor;
       if (buttonBorderRadius !== undefined) submitBtn.style.borderRadius = buttonBorderRadius + "px";
+    }
+    // Apply font to entire modal
+    if (fontFamily && fontFamily !== "inherit") {
+      modal.style.fontFamily = fontFamily;
+    }
+    if (fontSize) {
+      modal.style.fontSize = fontSize + "px";
     }
   }
 
