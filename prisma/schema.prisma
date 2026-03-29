@@ -68,6 +68,15 @@ model ShopSettings {
   shop              String   @unique
   notificationEmail String   @default("")
   emailEnabled      Boolean  @default(true)
+  // Pro customization
+  buttonLabel       String   @default("Request a Quote")
+  buttonBgColor     String   @default("#008060")
+  buttonTextColor   String   @default("#ffffff")
+  buttonBorderRadius String  @default("4")
+  formTitle         String   @default("Request a Quote")
+  formSuccessMsg    String   @default("Thank you! We'll be in touch soon.")
+  formShowCompany   Boolean  @default(true)
+  formSubmitLabel   String   @default("Submit Request")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }

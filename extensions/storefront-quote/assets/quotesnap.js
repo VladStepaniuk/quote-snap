@@ -102,25 +102,53 @@
   }
 
   /** @param {string} label */
-  function injectQuoteButton(label) {
+  function injectQuoteButton(label, customization = {}) {
+    const bg = customization.buttonBgColor || "#008060";
+    const color = customization.buttonTextColor || "#ffffff";
+    const radius = customization.buttonBorderRadius !== undefined ? customization.buttonBorderRadius + "px" : "4px";
+
     document.querySelectorAll(ADD_TO_CART_SELECTORS).forEach((btn) => {
       if (btn.dataset.quotesnapReplaced) return;
 
-      // Hide the real Add to Cart
       btn.style.display = "none";
       btn.setAttribute("aria-hidden", "true");
       btn.dataset.quotesnapReplaced = "1";
 
-      // Create the quote CTA
       const cta = document.createElement("button");
       cta.type = "button";
       cta.className = "quotesnap-cta";
       cta.setAttribute("data-quotesnap-cta", "1");
       cta.textContent = label;
+      cta.style.cssText = `background:${bg};color:${color};border-radius:${radius};border:none;padding:12px 24px;font-size:1rem;font-weight:600;cursor:pointer;width:100%;`;
       cta.addEventListener("click", openModal);
 
       btn.insertAdjacentElement("afterend", cta);
     });
+  }
+
+  function applyModalCustomization(customization = {}) {
+    if (!modal) return;
+    const title = customization.formTitle;
+    const submitLabel = customization.formSubmitLabel;
+    const successMsg = customization.formSuccessMsg;
+    const showCompany = customization.formShowCompany;
+
+    if (title) {
+      const titleEl = modal.querySelector(".quotesnap-modal__title");
+      if (titleEl) titleEl.textContent = title;
+    }
+    if (submitLabel) {
+      const submitText = modal.querySelector(".quotesnap-form__submit-text");
+      if (submitText) submitText.textContent = submitLabel;
+    }
+    if (successMsg) {
+      const successText = modal.querySelector(".quotesnap-success__message");
+      if (successText) successText.textContent = successMsg;
+    }
+    if (showCompany === false) {
+      const companyField = modal.querySelector(".quotesnap-field--company");
+      if (companyField) companyField.style.display = "none";
+    }
   }
 
   // ─── Modal ────────────────────────────────────────────────────────────────
@@ -202,14 +230,21 @@
   // ─── Main ─────────────────────────────────────────────────────────────────
 
   async function init() {
-    let rules;
+    let rules, customization = {};
 
     try {
       const res = await fetch(apiUrl, { credentials: "include" });
       if (!res.ok) return;
-      rules = await res.json();
+      const payload = await res.json();
+      // Support both old array format and new { rules, customization } format
+      if (Array.isArray(payload)) {
+        rules = payload;
+      } else {
+        rules = payload.rules || [];
+        customization = payload.customization || {};
+      }
     } catch {
-      return; // fail silently — don't break the storefront
+      return;
     }
 
     if (!Array.isArray(rules) || rules.length === 0) return;
@@ -218,9 +253,14 @@
     if (!match) return;
 
     if (match.hidePrice) hidePrices();
-    if (match.replaceAddToCart) injectQuoteButton(match.quoteButtonLabel || "Request a Quote");
 
-    // Show the block now that it's active
+    // Apply button customization
+    const btnLabel = customization.buttonLabel || match.quoteButtonLabel || "Request a Quote";
+    if (match.replaceAddToCart) injectQuoteButton(btnLabel, customization);
+
+    // Apply modal customization
+    applyModalCustomization(customization);
+
     root.style.display = "";
   }
 
