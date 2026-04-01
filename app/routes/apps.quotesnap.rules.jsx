@@ -22,12 +22,23 @@ export const loader = async ({ request }) => {
         replaceAddToCart: true,
         quoteButtonLabel: true,
         enabled: true,
+        // Per-rule customization
+        buttonBgColor: true,
+        buttonTextColor: true,
+        buttonBorderRadius: true,
+        formTitle: true,
+        formSuccessMsg: true,
+        formShowCompany: true,
+        formSubmitLabel: true,
+        fontFamily: true,
+        fontSize: true,
       },
     }),
     prisma.shopSettings.findUnique({ where: { shop } }),
   ]);
 
-  const customization = {
+  // Store-level defaults
+  const storeDefaults = {
     buttonLabel: settings?.buttonLabel || "Request a Quote",
     buttonBgColor: settings?.buttonBgColor || "#008060",
     buttonTextColor: settings?.buttonTextColor || "#ffffff",
@@ -36,9 +47,28 @@ export const loader = async ({ request }) => {
     formSuccessMsg: settings?.formSuccessMsg || "Thank you! We'll be in touch soon.",
     formShowCompany: settings?.formShowCompany ?? true,
     formSubmitLabel: settings?.formSubmitLabel || "Submit Request",
+    fontFamily: settings?.fontFamily || "inherit",
+    fontSize: settings?.fontSize || "16",
   };
 
-  return Response.json({ rules, customization }, {
+  // Merge per-rule overrides with store defaults
+  const rulesWithCustomization = rules.map((rule) => ({
+    ...rule,
+    customization: {
+      buttonLabel: rule.quoteButtonLabel || storeDefaults.buttonLabel,
+      buttonBgColor: rule.buttonBgColor || storeDefaults.buttonBgColor,
+      buttonTextColor: rule.buttonTextColor || storeDefaults.buttonTextColor,
+      buttonBorderRadius: rule.buttonBorderRadius || storeDefaults.buttonBorderRadius,
+      formTitle: rule.formTitle || storeDefaults.formTitle,
+      formSuccessMsg: rule.formSuccessMsg || storeDefaults.formSuccessMsg,
+      formShowCompany: rule.formShowCompany !== null && rule.formShowCompany !== undefined ? rule.formShowCompany : storeDefaults.formShowCompany,
+      formSubmitLabel: rule.formSubmitLabel || storeDefaults.formSubmitLabel,
+      fontFamily: rule.fontFamily || storeDefaults.fontFamily,
+      fontSize: rule.fontSize || storeDefaults.fontSize,
+    },
+  }));
+
+  return Response.json({ rules: rulesWithCustomization, customization: storeDefaults }, {
     headers: {
       "Access-Control-Allow-Origin": `https://${shop}`,
       "Cache-Control": "no-store",

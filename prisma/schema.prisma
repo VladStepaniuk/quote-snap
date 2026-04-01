@@ -47,6 +47,16 @@ model QuoteRule {
   enabled          Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  // Per-rule Pro customization (null = use store default)
+  buttonBgColor     String?
+  buttonTextColor   String?
+  buttonBorderRadius String?
+  formTitle         String?
+  formSuccessMsg    String?
+  formShowCompany   Boolean?
+  formSubmitLabel   String?
+  fontFamily        String?
+  fontSize          String?
 
   @@index([shop])
 }

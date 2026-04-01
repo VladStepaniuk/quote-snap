@@ -37,6 +37,16 @@ function buildRulePayload(formData, shop) {
     quoteButtonLabel:
       getTrimmedString(formData, "quoteButtonLabel") || "Request a Quote",
     enabled: formData.get("enabled") === "on",
+    // Per-rule customization (null = use store default)
+    buttonBgColor: getTrimmedString(formData, "buttonBgColor") || null,
+    buttonTextColor: getTrimmedString(formData, "buttonTextColor") || null,
+    buttonBorderRadius: getTrimmedString(formData, "buttonBorderRadius") || null,
+    formTitle: getTrimmedString(formData, "ruleFormTitle") || null,
+    formSuccessMsg: getTrimmedString(formData, "ruleFormSuccessMsg") || null,
+    formShowCompany: formData.get("ruleFormShowCompany") === "on" ? true : formData.get("ruleFormShowCompany") === "off" ? false : null,
+    formSubmitLabel: getTrimmedString(formData, "ruleFormSubmitLabel") || null,
+    fontFamily: getTrimmedString(formData, "ruleFontFamily") || null,
+    fontSize: getTrimmedString(formData, "ruleFontSize") || null,
   };
 }
 

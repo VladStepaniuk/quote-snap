@@ -65,7 +65,18 @@ const s = {
   planBadge: { display: "inline-block", background: "#f2f7fe", color: "#1f5199", borderRadius: 4, padding: "2px 8px", fontSize: "0.72rem", fontWeight: 600, marginLeft: 6 },
 };
 
-function RuleForm({ rule, onSave, onDelete, onCancel }) {
+const FONT_OPTIONS = [
+  { label: "Theme default", value: "inherit" },
+  { label: "System UI", value: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+  { label: "Inter", value: "'Inter', sans-serif" },
+  { label: "Georgia (serif)", value: "Georgia, 'Times New Roman', serif" },
+  { label: "Roboto", value: "'Roboto', sans-serif" },
+  { label: "Playfair Display", value: "'Playfair Display', serif" },
+  { label: "Montserrat", value: "'Montserrat', sans-serif" },
+];
+
+function RuleForm({ rule, onSave, onDelete, onCancel, isPro }) {
+  const [showCustom, setShowCustom] = useState(false);
   return (
     <form style={s.ruleCard} onSubmit={(e) => onSave(e, rule)}>
       <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
@@ -115,6 +126,67 @@ function RuleForm({ rule, onSave, onDelete, onCancel }) {
           Enabled
         </label>
       </div>
+
+      {/* Per-rule customization — Pro only */}
+      {isPro ? (
+        <div style={{ marginTop: 12, borderTop: "1px solid #f1f2f3", paddingTop: 10 }}>
+          <button type="button" onClick={() => setShowCustom(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: "#4f46e5", fontWeight: 600, fontSize: "0.8rem", padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
+            {showCustom ? "▾" : "▸"} Customize button &amp; form
+          </button>
+          {showCustom && (
+            <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
+              <div style={s.row2}>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Button bg colour</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input type="color" name="buttonBgColor" defaultValue={rule.buttonBgColor || "#008060"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                  </div>
+                </label>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Button text colour</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input type="color" name="buttonTextColor" defaultValue={rule.buttonTextColor || "#ffffff"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                  </div>
+                </label>
+              </div>
+              <div style={s.row2}>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Border radius (px)</span>
+                  <input type="number" name="buttonBorderRadius" defaultValue={rule.buttonBorderRadius || "4"} min="0" max="50" style={{ ...s.input, maxWidth: 100 }} />
+                </label>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Font size (px)</span>
+                  <input type="number" name="ruleFontSize" defaultValue={rule.fontSize || "16"} min="12" max="24" style={{ ...s.input, maxWidth: 100 }} />
+                </label>
+              </div>
+              <label style={{ display: "grid", gap: 4 }}>
+                <span style={s.label}>Font family</span>
+                <select name="ruleFontFamily" defaultValue={rule.fontFamily || "inherit"} style={s.select}>
+                  {FONT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </label>
+              <label style={{ display: "grid", gap: 4 }}>
+                <span style={s.label}>Modal title</span>
+                <input style={s.input} name="ruleFormTitle" defaultValue={rule.formTitle || ""} placeholder="Request a Quote" maxLength={80} />
+              </label>
+              <label style={{ display: "grid", gap: 4 }}>
+                <span style={s.label}>Submit button label</span>
+                <input style={s.input} name="ruleFormSubmitLabel" defaultValue={rule.formSubmitLabel || ""} placeholder="Submit Request" maxLength={80} />
+              </label>
+              <label style={{ display: "grid", gap: 4 }}>
+                <span style={s.label}>Success message</span>
+                <input style={s.input} name="ruleFormSuccessMsg" defaultValue={rule.formSuccessMsg || ""} placeholder="Thank you! We'll be in touch soon." maxLength={200} />
+              </label>
+              <label style={s.checkLabel}>
+                <input type="checkbox" name="ruleFormShowCompany" defaultChecked={rule.formShowCompany !== false} style={{ accentColor: "#4f46e5", width: 15, height: 15 }} />
+                <span style={{ fontSize: "0.875rem", color: "#374151" }}>Show "Company" field</span>
+              </label>
+              <div style={{ fontSize: "0.75rem", color: "#9ca3af" }}>Leave blank to use store defaults from the Customization tab.</div>
+            </div>
+          )}
+        </div>
+      ) : null}
+
       <div style={s.btnRow}>
         <button style={s.btnPrimary} type="submit">Save</button>
         {rule.id && <button style={s.btnDanger} type="button" onClick={() => onDelete(rule.id)}>Delete</button>}
@@ -282,10 +354,10 @@ export default function Index() {
                 <div style={s.emptyState}>No rules yet. Add your first rule to start hiding prices.</div>
               )}
 
-              {rules.map((rule) => <RuleForm key={rule.id} rule={rule} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} />)}
+              {rules.map((rule) => <RuleForm key={rule.id} rule={rule} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} isPro={currentPlan === "pro"} />)}
 
               {showAddRule ? (
-                <RuleForm rule={{ id: "", name: "", quoteButtonLabel: "Request a Quote", scope: "all_products", scopeValue: "", visibility: "all_visitors", hidePrice: true, replaceAddToCart: true, enabled: true }} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} />
+                <RuleForm rule={{ id: "", name: "", quoteButtonLabel: "Request a Quote", scope: "all_products", scopeValue: "", visibility: "all_visitors", hidePrice: true, replaceAddToCart: true, enabled: true }} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} isPro={currentPlan === "pro"} />
               ) : canAddRule ? (
                 <button style={s.addBtn} onClick={() => setShowAddRule(true)}>+ Add rule</button>
               ) : (

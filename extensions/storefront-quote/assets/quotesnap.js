@@ -267,12 +267,15 @@
 
     if (match.hidePrice) hidePrices();
 
+    // Use per-rule customization if available, fall back to store defaults
+    const ruleCustomization = match.customization || customization;
+
     // Apply button customization
-    const btnLabel = customization.buttonLabel || match.quoteButtonLabel || "Request a Quote";
-    if (match.replaceAddToCart) injectQuoteButton(btnLabel, customization);
+    const btnLabel = ruleCustomization.buttonLabel || match.quoteButtonLabel || "Request a Quote";
+    if (match.replaceAddToCart) injectQuoteButton(btnLabel, ruleCustomization);
 
     // Apply modal customization
-    applyModalCustomization(customization);
+    applyModalCustomization(ruleCustomization);
 
     root.style.display = "";
   }
