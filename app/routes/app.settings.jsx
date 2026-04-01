@@ -33,7 +33,7 @@ const s = {
   label: { fontSize: "0.78rem", fontWeight: 600, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5, display: "block" },
   input: { border: "1px solid #e3e7ed", borderRadius: 8, padding: "9px 12px", fontSize: "0.875rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box" },
   checkRow: { display: "inline-flex", alignItems: "center", gap: 10, cursor: "pointer" },
-  btnSave: { background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
+  btnSave: { background: "#008060", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
   savedMsg: { color: "#15803d", fontSize: "0.875rem", fontWeight: 600 },
 };
 
@@ -54,7 +54,7 @@ export default function SettingsPage() {
               <input type="email" name="notificationEmail" defaultValue={data.notificationEmail} placeholder="you@yourstore.com" style={s.input} />
             </label>
             <label style={s.checkRow}>
-              <input type="checkbox" name="emailEnabled" defaultChecked={data.emailEnabled} style={{ accentColor: "#4f46e5", width: 16, height: 16 }} />
+              <input type="checkbox" name="emailEnabled" defaultChecked={data.emailEnabled} style={{ accentColor: "#008060", width: 16, height: 16 }} />
               <span style={{ fontSize: "0.875rem", fontWeight: 500, color: "#374151" }}>Enable email notifications</span>
             </label>
           </div>

@@ -130,7 +130,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro }) {
       {/* Per-rule customization — Pro only */}
       {isPro ? (
         <div style={{ marginTop: 12, borderTop: "1px solid #f1f2f3", paddingTop: 10 }}>
-          <button type="button" onClick={() => setShowCustom(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: "#4f46e5", fontWeight: 600, fontSize: "0.8rem", padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
+          <button type="button" onClick={() => setShowCustom(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: "#008060", fontWeight: 600, fontSize: "0.8rem", padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
             {showCustom ? "▾" : "▸"} Customize button &amp; form
           </button>
           {showCustom && (
@@ -178,7 +178,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro }) {
                 <input style={s.input} name="ruleFormSuccessMsg" defaultValue={rule.formSuccessMsg || ""} placeholder="Thank you! We'll be in touch soon." maxLength={200} />
               </label>
               <label style={s.checkLabel}>
-                <input type="checkbox" name="ruleFormShowCompany" defaultChecked={rule.formShowCompany !== false} style={{ accentColor: "#4f46e5", width: 15, height: 15 }} />
+                <input type="checkbox" name="ruleFormShowCompany" defaultChecked={rule.formShowCompany !== false} style={{ accentColor: "#008060", width: 15, height: 15 }} />
                 <span style={{ fontSize: "0.875rem", color: "#374151" }}>Show "Company" field</span>
               </label>
               <div style={{ fontSize: "0.75rem", color: "#9ca3af" }}>Leave blank to use store defaults from the Customization tab.</div>

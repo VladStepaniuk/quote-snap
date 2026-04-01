@@ -80,13 +80,13 @@ const s = {
   select: { border: "1px solid #e3e7ed", borderRadius: 8, padding: "9px 12px", fontSize: "0.875rem", fontFamily: "inherit", width: "100%", boxSizing: "border-box", background: "#fff" },
   row2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
   checkRow: { display: "inline-flex", alignItems: "center", gap: 10, cursor: "pointer" },
-  btnSave: { background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
+  btnSave: { background: "#008060", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" },
   savedMsg: { color: "#15803d", fontSize: "0.875rem", fontWeight: 600 },
   locked: { background: "#f9fafb", border: "1px dashed #d1d5db", borderRadius: 12, padding: "28px", textAlign: "center" },
   lockedIcon: { fontSize: "1.8rem", marginBottom: 8 },
   lockedTitle: { fontWeight: 700, color: "#111827", marginBottom: 6 },
   lockedDesc: { fontSize: "0.85rem", color: "#6b7280", marginBottom: 14 },
-  upgradeLink: { color: "#4f46e5", fontWeight: 700, fontSize: "0.875rem" },
+  upgradeLink: { color: "#008060", fontWeight: 700, fontSize: "0.875rem" },
   // Preview
   previewWrap: { position: "sticky", top: 20 },
   previewCard: { background: "#fff", border: "1px solid #e3e7ed", borderRadius: 12, padding: "20px" },
@@ -240,7 +240,7 @@ export default function CustomizationPage() {
                     <input type="text" name="formSuccessMsg" value={formSuccessMsg} onChange={(e) => setFormSuccessMsg(e.target.value)} maxLength={200} style={s.input} />
                   </label>
                   <label style={s.checkRow}>
-                    <input type="checkbox" name="formShowCompany" checked={formShowCompany} onChange={(e) => setFormShowCompany(e.target.checked)} style={{ accentColor: "#4f46e5", width: 16, height: 16 }} />
+                    <input type="checkbox" name="formShowCompany" checked={formShowCompany} onChange={(e) => setFormShowCompany(e.target.checked)} style={{ accentColor: "#008060", width: 16, height: 16 }} />
                     <span style={{ fontSize: "0.875rem", fontWeight: 500, color: "#374151" }}>Show "Company" field in form</span>
                   </label>
                 </div>
