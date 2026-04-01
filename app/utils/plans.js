@@ -37,6 +37,7 @@ export const PLANS = {
       "Email notifications",
       "Analytics",
       "CSV export",
+      "Button & form customization",
       "Priority support",
     ],
   },
