@@ -59,7 +59,7 @@ const s = {
   deleteQuoteBtn: { background: "none", border: "none", color: "#8c9196", cursor: "pointer", fontSize: "1rem", padding: "0 4px", lineHeight: 1, flexShrink: 0 },
   notice: { background: "#f0f8f5", border: "1px solid #b5e0d3", borderRadius: 6, padding: "10px 14px", marginBottom: 16, fontSize: "0.875rem", color: "#108043" },
   errorNotice: { background: "#fff4f4", border: "1px solid #fda29b", borderRadius: 6, padding: "10px 14px", marginBottom: 16, fontSize: "0.875rem", color: "#d82c0d" },
-  barWrap: { display: "flex", alignItems: "flex-end", gap: 3, height: 60, marginTop: 8 },
+  barWrap: { display: "flex", alignItems: "stretch", gap: 3, height: 70, marginTop: 8 },
   bar: { flex: 1, background: "#008060", borderRadius: "2px 2px 0 0", minHeight: 2 },
   barLabel: { fontSize: "0.6rem", color: "#8c9196", textAlign: "center", marginTop: 2 },
   planBadge: { display: "inline-block", background: "#f2f7fe", color: "#1f5199", borderRadius: 4, padding: "2px 8px", fontSize: "0.72rem", fontWeight: 600, marginLeft: 6 },
@@ -158,7 +158,10 @@ export default function Index() {
 
   const productMap = useMemo(() => {
     const m = {};
-    for (const p of products) m[p.id] = p.title;
+    for (const p of products) {
+      m[p.id] = p.title; // full GID
+      m[p.id.split("/").pop()] = p.title; // numeric ID tail
+    }
     return m;
   }, [products]);
 
@@ -240,7 +243,9 @@ export default function Index() {
               <div style={s.barWrap}>
                 {analytics.daily.map((d) => (
                   <div key={d.date} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <div style={{ ...s.bar, height: `${Math.max(4, Math.round((d.count / maxBar) * 56))}px` }} title={`${d.date}: ${d.count}`} />
+                    <div style={{ flex: 1, display: "flex", alignItems: "flex-end", width: "100%" }}>
+                      <div style={{ ...s.bar, width: "100%", height: `${d.count > 0 ? Math.max(6, Math.round((d.count / maxBar) * 56)) : 0}px`, background: d.count > 0 ? "#008060" : "#e4e5e7" }} title={`${d.date}: ${d.count}`} />
+                    </div>
                     <div style={s.barLabel}>{d.date.slice(5)}</div>
                   </div>
                 ))}
