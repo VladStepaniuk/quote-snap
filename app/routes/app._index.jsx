@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useFetcher, useLoaderData, useRevalidator } from "react-router";
+import { useFetcher, useLoaderData, useRevalidator, useLocation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import {
@@ -69,6 +69,7 @@ export default function Index() {
   const { shop, rules, requests, products, currentPlan, maxRules, analytics } = useLoaderData();
   const fetcher = useFetcher();
   const { revalidate } = useRevalidator();
+  const { search } = useLocation();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
   const [statusMessage, setStatusMessage] = useState(null);
@@ -259,7 +260,7 @@ export default function Index() {
               <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>📊</div>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>Analytics — Pro plan</div>
               <div style={{ fontSize: "0.85rem", marginBottom: 12 }}>Upgrade to Pro to see quote trends and top products.</div>
-              <a href="?page=billing" style={{ color: "#008060", fontWeight: 600, fontSize: "0.85rem" }}>Upgrade to Pro →</a>
+              <a href={`/app/billing${search}`} style={{ color: "#008060", fontWeight: 600, fontSize: "0.85rem" }}>Upgrade to Pro →</a>
             </div>
             )}
 
@@ -282,7 +283,7 @@ export default function Index() {
                 <button style={s.addBtn} onClick={() => setShowAddRule(true)}>+ Add rule</button>
               ) : (
                 <div style={{ ...s.errorNotice, marginTop: 8, textAlign: "center" }}>
-                  Plan limit reached ({rules.length}/{maxRules} rules). <a href="?page=billing" style={{ color: "#008060" }}>Upgrade</a> to add more.
+                  Plan limit reached ({rules.length}/{maxRules} rules). <a href={`/app/billing${search}`} style={{ color: "#008060" }}>Upgrade</a> to add more.
                 </div>
               )}
             </div>

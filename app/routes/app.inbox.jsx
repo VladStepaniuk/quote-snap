@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useFetcher, useLoaderData, useRevalidator } from "react-router";
+import { useFetcher, useLoaderData, useRevalidator, useLocation } from "react-router";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 
@@ -67,6 +67,7 @@ export default function InboxPage() {
   const { requests, currentPlan, newCount } = useLoaderData();
   const fetcher = useFetcher();
   const { revalidate } = useRevalidator();
+  const { search } = useLocation();
   const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState(null);
   const [notes, setNotes] = useState("");
@@ -135,7 +136,7 @@ export default function InboxPage() {
           <div style={s.lockedIcon}>📬</div>
           <div style={s.lockedTitle}>Premium Quote Inbox</div>
           <div style={s.lockedDesc}>Upgrade to Starter or Pro to access the full quote inbox with status tracking, reply notes, and filters.</div>
-          <a href="/app/billing" style={s.btnPrimary}>Upgrade plan →</a>
+          <a href={`/app/billing${search}`} style={s.btnPrimary}>Upgrade plan →</a>
         </div>
       </div>
     );
