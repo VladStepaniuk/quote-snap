@@ -268,7 +268,7 @@ export default function CustomizationPage() {
             ) : <LockedCard icon="✏️" title="Typography" desc="Set a custom font family and size for your button and quote form." />}
 
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <button type="submit" style={s.btnSave}>Save customization</button>
+              {isPro && <button type="submit" style={s.btnSave}>Save customization</button>}
               {saved && <span style={s.savedMsg}>✓ Saved</span>}
             </div>
           </div>
