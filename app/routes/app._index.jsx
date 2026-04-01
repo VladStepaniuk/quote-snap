@@ -75,7 +75,8 @@ const FONT_OPTIONS = [
   { label: "Montserrat", value: "'Montserrat', sans-serif" },
 ];
 
-function RuleForm({ rule, onSave, onDelete, onCancel, isPro }) {
+function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collections }) {
+  const [scope, setScope] = useState(rule.scope || "all_products");
   const [showCustom, setShowCustom] = useState(false);
   return (
     <form style={s.ruleCard} onSubmit={(e) => onSave(e, rule)}>
@@ -93,16 +94,37 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro }) {
       <div style={s.row3}>
         <label style={{ display: "grid", gap: 4 }}>
           <span style={s.label}>Scope</span>
-          <select style={s.select} name="scope" defaultValue={rule.scope || "all_products"}>
+          <select style={s.select} name="scope" value={scope} onChange={(e) => setScope(e.target.value)}>
             <option value="all_products">All products</option>
             <option value="product">Specific product</option>
             <option value="collection">Collection</option>
           </select>
         </label>
-        <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Scope value</span>
-          <input style={s.input} name="scopeValue" defaultValue={rule.scopeValue} placeholder="gid://shopify/..." />
-        </label>
+        {scope === "product" && (
+          <label style={{ display: "grid", gap: 4 }}>
+            <span style={s.label}>Product</span>
+            <select style={s.select} name="scopeValue" defaultValue={rule.scopeValue || ""}>
+              <option value="">— select product —</option>
+              {(products || []).map((p) => (
+                <option key={p.id} value={p.id.split("/").pop()}>{p.title}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        {scope === "collection" && (
+          <label style={{ display: "grid", gap: 4 }}>
+            <span style={s.label}>Collection</span>
+            <select style={s.select} name="scopeValue" defaultValue={rule.scopeValue || ""}>
+              <option value="">— select collection —</option>
+              {(collections || []).map((c) => (
+                <option key={c.id} value={c.id.split("/").pop()}>{c.title}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        {scope === "all_products" && (
+          <input type="hidden" name="scopeValue" value="" />
+        )}
         <label style={{ display: "grid", gap: 4 }}>
           <span style={s.label}>Audience</span>
           <select style={s.select} name="visibility" defaultValue={rule.visibility || "all_visitors"}>
@@ -197,7 +219,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro }) {
 }
 
 export default function Index() {
-  const { shop, rules, requests, products, currentPlan, maxRules, analytics } = useLoaderData();
+  const { shop, rules, requests, products, collections, currentPlan, maxRules, analytics } = useLoaderData();
   const fetcher = useFetcher();
   const { revalidate } = useRevalidator();
   const { search } = useLocation();
@@ -354,10 +376,10 @@ export default function Index() {
                 <div style={s.emptyState}>No rules yet. Add your first rule to start hiding prices.</div>
               )}
 
-              {rules.map((rule) => <RuleForm key={rule.id} rule={rule} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} isPro={currentPlan === "pro"} />)}
+              {rules.map((rule) => <RuleForm key={rule.id} rule={rule} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} isPro={currentPlan === "pro"} products={products} collections={collections} />)}
 
               {showAddRule ? (
-                <RuleForm rule={{ id: "", name: "", quoteButtonLabel: "Request a Quote", scope: "all_products", scopeValue: "", visibility: "all_visitors", hidePrice: true, replaceAddToCart: true, enabled: true }} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} isPro={currentPlan === "pro"} />
+                <RuleForm rule={{ id: "", name: "", quoteButtonLabel: "Request a Quote", scope: "all_products", scopeValue: "", visibility: "all_visitors", hidePrice: true, replaceAddToCart: true, enabled: true }} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} isPro={currentPlan === "pro"} products={products} collections={collections} />
               ) : canAddRule ? (
                 <button style={s.addBtn} onClick={() => setShowAddRule(true)}>+ Add rule</button>
               ) : (

@@ -65,6 +65,14 @@ async function getProductSnapshot(admin) {
   return responseJson.data?.products?.nodes ?? [];
 }
 
+async function getCollectionSnapshot(admin) {
+  const resp = await admin.graphql(`#graphql
+    query { collections(first: 250) { nodes { id title } } }
+  `);
+  const json = await resp.json();
+  return json.data?.collections?.nodes ?? [];
+}
+
 async function getCurrentPlan(admin) {
   try {
     const resp = await admin.graphql(`
@@ -199,17 +207,18 @@ export async function getAnalytics(shop) {
 }
 
 export async function getQuoteDashboardData({ shop, admin, billing }) {
-  const [rules, requests, products, currentPlan] = await Promise.all([
+  const [rules, requests, products, collections, currentPlan] = await Promise.all([
     prisma.quoteRule.findMany({ where: { shop }, orderBy: { createdAt: "asc" } }),
     prisma.quoteRequest.findMany({ where: { shop }, orderBy: { createdAt: "desc" }, take: 200 }),
     getProductSnapshot(admin),
+    getCollectionSnapshot(admin),
     getCurrentPlan(admin),
   ]);
 
   const maxRules = getMaxRules(currentPlan);
 
   const newCount = requests.filter((r) => r.status === "new").length;
-  return { shop, rules, requests, products, currentPlan, maxRules, newCount, supportEmail: "support@quotesnap.app" };
+  return { shop, rules, requests, products, collections, currentPlan, maxRules, newCount, supportEmail: "support@quotesnap.app" };
 }
 
 export async function handleQuoteDashboardAction({ shop, formData, admin }) {
