@@ -65,6 +65,65 @@ const s = {
   planBadge: { display: "inline-block", background: "#f2f7fe", color: "#1f5199", borderRadius: 4, padding: "2px 8px", fontSize: "0.72rem", fontWeight: 600, marginLeft: 6 },
 };
 
+function RuleForm({ rule, onSave, onDelete, onCancel }) {
+  return (
+    <form style={s.ruleCard} onSubmit={(e) => onSave(e, rule)}>
+      <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
+      <div style={s.row2}>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Rule name</span>
+          <input style={s.input} name="name" defaultValue={rule.name} placeholder="e.g. Guests request quote" />
+        </label>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Button label</span>
+          <input style={s.input} name="quoteButtonLabel" defaultValue={rule.quoteButtonLabel || "Request a Quote"} />
+        </label>
+      </div>
+      <div style={s.row3}>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Scope</span>
+          <select style={s.select} name="scope" defaultValue={rule.scope || "all_products"}>
+            <option value="all_products">All products</option>
+            <option value="product">Specific product</option>
+            <option value="collection">Collection</option>
+          </select>
+        </label>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Scope value</span>
+          <input style={s.input} name="scopeValue" defaultValue={rule.scopeValue} placeholder="gid://shopify/..." />
+        </label>
+        <label style={{ display: "grid", gap: 4 }}>
+          <span style={s.label}>Audience</span>
+          <select style={s.select} name="visibility" defaultValue={rule.visibility || "all_visitors"}>
+            <option value="all_visitors">All visitors</option>
+            <option value="guests_only">Guests only</option>
+            <option value="tagged_customers">Tagged customers</option>
+          </select>
+        </label>
+      </div>
+      <div style={s.checkRow}>
+        <label style={s.checkLabel}>
+          <input type="checkbox" name="hidePrice" defaultChecked={rule.hidePrice !== false} />
+          Hide price
+        </label>
+        <label style={s.checkLabel}>
+          <input type="checkbox" name="replaceAddToCart" defaultChecked={rule.replaceAddToCart !== false} />
+          Replace Add to Cart
+        </label>
+        <label style={s.checkLabel}>
+          <input type="checkbox" name="enabled" defaultChecked={rule.enabled !== false} />
+          Enabled
+        </label>
+      </div>
+      <div style={s.btnRow}>
+        <button style={s.btnPrimary} type="submit">Save</button>
+        {rule.id && <button style={s.btnDanger} type="button" onClick={() => onDelete(rule.id)}>Delete</button>}
+        {!rule.id && <button style={s.btnSecondary} type="button" onClick={onCancel}>Cancel</button>}
+      </div>
+    </form>
+  );
+}
+
 export default function Index() {
   const { shop, rules, requests, products, currentPlan, maxRules, analytics } = useLoaderData();
   const fetcher = useFetcher();
@@ -149,63 +208,6 @@ export default function Index() {
 
   const canAddRule = maxRules === null || rules.length < maxRules;
 
-  const RuleForm = ({ rule }) => (
-    <form style={s.ruleCard} onSubmit={(e) => saveRule(e, rule)}>
-      <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
-      <div style={s.row2}>
-        <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Rule name</span>
-          <input style={s.input} name="name" defaultValue={rule.name} placeholder="e.g. Guests request quote" />
-        </label>
-        <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Button label</span>
-          <input style={s.input} name="quoteButtonLabel" defaultValue={rule.quoteButtonLabel || "Request a Quote"} />
-        </label>
-      </div>
-      <div style={s.row3}>
-        <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Scope</span>
-          <select style={s.select} name="scope" defaultValue={rule.scope || "all_products"}>
-            <option value="all_products">All products</option>
-            <option value="product">Specific product</option>
-            <option value="collection">Collection</option>
-          </select>
-        </label>
-        <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Scope value</span>
-          <input style={s.input} name="scopeValue" defaultValue={rule.scopeValue} placeholder="gid://shopify/..." />
-        </label>
-        <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Audience</span>
-          <select style={s.select} name="visibility" defaultValue={rule.visibility || "all_visitors"}>
-            <option value="all_visitors">All visitors</option>
-            <option value="guests_only">Guests only</option>
-            <option value="tagged_customers">Tagged customers</option>
-          </select>
-        </label>
-      </div>
-      <div style={s.checkRow}>
-        <label style={s.checkLabel}>
-          <input type="checkbox" name="hidePrice" defaultChecked={rule.hidePrice !== false} />
-          Hide price
-        </label>
-        <label style={s.checkLabel}>
-          <input type="checkbox" name="replaceAddToCart" defaultChecked={rule.replaceAddToCart !== false} />
-          Replace Add to Cart
-        </label>
-        <label style={s.checkLabel}>
-          <input type="checkbox" name="enabled" defaultChecked={rule.enabled !== false} />
-          Enabled
-        </label>
-      </div>
-      <div style={s.btnRow}>
-        <button style={s.btnPrimary} type="submit">Save</button>
-        {rule.id && <button style={s.btnDanger} type="button" onClick={() => deleteRule(rule.id)}>Delete</button>}
-        {!rule.id && <button style={s.btnSecondary} type="button" onClick={() => setShowAddRule(false)}>Cancel</button>}
-      </div>
-    </form>
-  );
-
   return (
     <s-page heading="QuoteSnap" inlineSize="base">
       <div style={s.page}>
@@ -275,10 +277,10 @@ export default function Index() {
                 <div style={s.emptyState}>No rules yet. Add your first rule to start hiding prices.</div>
               )}
 
-              {rules.map((rule) => <RuleForm key={rule.id} rule={rule} />)}
+              {rules.map((rule) => <RuleForm key={rule.id} rule={rule} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} />)}
 
               {showAddRule ? (
-                <RuleForm rule={{ id: "", name: "", quoteButtonLabel: "Request a Quote", scope: "all_products", scopeValue: "", visibility: "all_visitors", hidePrice: true, replaceAddToCart: true, enabled: true }} />
+                <RuleForm rule={{ id: "", name: "", quoteButtonLabel: "Request a Quote", scope: "all_products", scopeValue: "", visibility: "all_visitors", hidePrice: true, replaceAddToCart: true, enabled: true }} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} />
               ) : canAddRule ? (
                 <button style={s.addBtn} onClick={() => setShowAddRule(true)}>+ Add rule</button>
               ) : (
