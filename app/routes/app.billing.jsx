@@ -120,6 +120,7 @@ export default function BillingPage() {
     return `/app/billing?${params.toString()}`;
   };
 
+  const planOrder = { free: 0, starter: 1, pro: 2 };
   const planList = [
     { key: "free", ...plans.free },
     { key: "starter", ...plans.starter },
@@ -136,6 +137,7 @@ export default function BillingPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
           {planList.map((plan) => {
             const isCurrent = currentPlan === plan.key;
+            const isUpgrade = planOrder[plan.key] > planOrder[currentPlan];
             return (
               <div
                 key={plan.key}
@@ -168,7 +170,7 @@ export default function BillingPage() {
                   <div style={{ textAlign: "center", fontWeight: 600, color: "#008060", fontSize: "0.875rem" }}>
                     ✓ Current plan
                   </div>
-                ) : (
+                ) : isUpgrade ? (
                   <button
                     type="button"
                     disabled={fetcher.state !== "idle"}
@@ -176,8 +178,8 @@ export default function BillingPage() {
                     style={{
                       width: "100%",
                       padding: "10px 0",
-                      background: plan.key === "free" ? "#f3f4f6" : "#008060",
-                      color: plan.key === "free" ? "#374151" : "#fff",
+                      background: "#008060",
+                      color: "#fff",
                       border: "none",
                       borderRadius: 8,
                       fontWeight: 600,
@@ -186,8 +188,12 @@ export default function BillingPage() {
                       opacity: fetcher.state !== "idle" ? 0.7 : 1,
                     }}
                   >
-                    {fetcher.state !== "idle" ? "Loading…" : plan.key === "free" ? "Downgrade to Free" : `Upgrade to ${plan.name}`}
+                    {fetcher.state !== "idle" ? "Loading…" : `Upgrade to ${plan.name}`}
                   </button>
+                ) : (
+                  <div style={{ textAlign: "center", fontSize: "0.8rem", color: "#9ca3af" }}>
+                    To downgrade, cancel your subscription via Shopify settings.
+                  </div>
                 )}
               </div>
             );
