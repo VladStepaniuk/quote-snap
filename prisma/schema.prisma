@@ -57,6 +57,10 @@ model QuoteRule {
   formSubmitLabel   String?
   fontFamily        String?
   fontSize          String?
+  modalBgColor      String?
+  modalTextColor    String?
+  inputBgColor      String?
+  inputTextColor    String?
 
   @@index([shop])
 }

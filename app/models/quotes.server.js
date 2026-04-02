@@ -47,6 +47,10 @@ function buildRulePayload(formData, shop) {
     formSubmitLabel: getTrimmedString(formData, "ruleFormSubmitLabel") || null,
     fontFamily: getTrimmedString(formData, "ruleFontFamily") || null,
     fontSize: getTrimmedString(formData, "ruleFontSize") || null,
+    modalBgColor: getTrimmedString(formData, "modalBgColor") || null,
+    modalTextColor: getTrimmedString(formData, "modalTextColor") || null,
+    inputBgColor: getTrimmedString(formData, "inputBgColor") || null,
+    inputTextColor: getTrimmedString(formData, "inputTextColor") || null,
   };
 }
 

@@ -185,6 +185,26 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
               </div>
               <div style={s.row2}>
                 <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Modal background</span>
+                  <input type="color" name="modalBgColor" defaultValue={rule.modalBgColor || "#ffffff"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                </label>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Modal text colour</span>
+                  <input type="color" name="modalTextColor" defaultValue={rule.modalTextColor || "#111827"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                </label>
+              </div>
+              <div style={s.row2}>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Input background</span>
+                  <input type="color" name="inputBgColor" defaultValue={rule.inputBgColor || "#ffffff"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                </label>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Input text colour</span>
+                  <input type="color" name="inputTextColor" defaultValue={rule.inputTextColor || "#111827"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                </label>
+              </div>
+              <div style={s.row2}>
+                <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Border radius (px)</span>
                   <input type="number" name="buttonBorderRadius" defaultValue={rule.buttonBorderRadius || "4"} onChange={e => setPreviewRadius(e.target.value)} min="0" max="50" style={{ ...s.input, maxWidth: 100 }} />
                 </label>

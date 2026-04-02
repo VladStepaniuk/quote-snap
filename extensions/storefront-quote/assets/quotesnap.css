@@ -1,30 +1,43 @@
 /* ── QuoteSnap storefront styles ─────────────────────────────────────── */
 
-/* CTA button — inherits theme button styles where possible */
+/* CSS variables — overridden per-rule by JS */
+:root {
+  --qs-btn-bg: #008060;
+  --qs-btn-color: #ffffff;
+  --qs-btn-radius: 4px;
+  --qs-modal-bg: #ffffff;
+  --qs-modal-color: #111827;
+  --qs-input-bg: #ffffff;
+  --qs-input-color: #111827;
+  --qs-input-border: #d1d5db;
+  --qs-label-color: #374151;
+  --qs-font-family: inherit;
+  --qs-font-size: 1rem;
+}
+
+/* CTA button */
 .quotesnap-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 100%;
-  padding: 1em 1.5em;
-  font-size: 1em;
+  padding: 14px 24px;
+  font-size: var(--qs-font-size);
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: #fff;
-  background: #1a1a2e;
-  border: 2px solid #1a1a2e;
-  border-radius: 4px;
+  color: var(--qs-btn-color);
+  background: var(--qs-btn-bg);
+  border: none;
+  border-radius: var(--qs-btn-radius);
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  transition: opacity 160ms ease;
+  margin-top: 8px;
+  box-sizing: border-box;
+  font-family: var(--qs-font-family);
 }
 
 .quotesnap-cta:hover,
 .quotesnap-cta:focus-visible {
-  background: #16213e;
-  border-color: #16213e;
-  outline: 2px solid #16213e;
+  opacity: 0.88;
+  outline: 2px solid var(--qs-btn-bg);
   outline-offset: 2px;
 }
 
@@ -53,13 +66,16 @@
 .quotesnap-modal__dialog {
   position: relative;
   z-index: 1;
-  background: #fff;
+  background: var(--qs-modal-bg);
+  color: var(--qs-modal-color);
   border-radius: 12px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
   padding: 2rem;
   width: min(480px, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
+  font-family: var(--qs-font-family);
+  font-size: var(--qs-font-size);
 }
 
 .quotesnap-modal__close {
@@ -70,13 +86,14 @@
   border: none;
   font-size: 1.2rem;
   cursor: pointer;
-  color: #555;
+  color: var(--qs-modal-color);
+  opacity: 0.5;
   line-height: 1;
   padding: 0.25rem;
 }
 
 .quotesnap-modal__close:hover {
-  color: #111;
+  opacity: 1;
 }
 
 .quotesnap-modal__title {
@@ -84,10 +101,12 @@
   font-weight: 700;
   margin: 0 0 0.25rem;
   padding-right: 2rem;
+  color: var(--qs-modal-color);
 }
 
 .quotesnap-modal__product-name {
-  color: #555;
+  color: var(--qs-modal-color);
+  opacity: 0.6;
   font-size: 0.9rem;
   margin: 0 0 1.5rem;
 }
@@ -106,16 +125,18 @@
   gap: 0.35rem;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #333;
+  color: var(--qs-label-color);
 }
 
 .quotesnap-form__field input,
 .quotesnap-form__field textarea {
-  border: 1.5px solid #d1d5db;
+  background: var(--qs-input-bg);
+  color: var(--qs-input-color);
+  border: 1.5px solid var(--qs-input-border);
   border-radius: 6px;
   padding: 0.65rem 0.75rem;
   font-size: 0.95rem;
-  font-family: inherit;
+  font-family: var(--qs-font-family);
   transition: border-color 140ms;
   width: 100%;
   box-sizing: border-box;
@@ -124,7 +145,7 @@
 .quotesnap-form__field input:focus,
 .quotesnap-form__field textarea:focus {
   outline: none;
-  border-color: #1a1a2e;
+  border-color: var(--qs-btn-bg);
 }
 
 .quotesnap-form__error {
@@ -135,19 +156,20 @@
 
 .quotesnap-form__submit {
   padding: 0.85em 1.5em;
-  background: #1a1a2e;
-  color: #fff;
+  background: var(--qs-btn-bg);
+  color: var(--qs-btn-color);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--qs-btn-radius);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 140ms;
+  transition: opacity 140ms;
   width: 100%;
+  font-family: var(--qs-font-family);
 }
 
 .quotesnap-form__submit:hover:not(:disabled) {
-  background: #16213e;
+  opacity: 0.88;
 }
 
 .quotesnap-form__submit:disabled {
@@ -161,32 +183,10 @@
   text-align: center;
   padding: 2rem 1rem;
   font-size: 1.05rem;
-  color: #1a6b3a;
+  color: #008060;
   font-weight: 500;
 }
 
 .quotesnap-success[hidden] {
   display: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  .quotesnap-modal__dialog {
-    background: #1e1e2e;
-    color: #e0e0e0;
-  }
-
-  .quotesnap-form__field {
-    color: #ccc;
-  }
-
-  .quotesnap-form__field input,
-  .quotesnap-form__field textarea {
-    background: #2a2a3e;
-    border-color: #444;
-    color: #e0e0e0;
-  }
-
-  .quotesnap-modal__close {
-    color: #aaa;
-  }
 }

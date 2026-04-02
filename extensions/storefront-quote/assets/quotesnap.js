@@ -103,10 +103,6 @@
 
   /** @param {string} label */
   function injectQuoteButton(label, customization = {}) {
-    const bg = customization.buttonBgColor || "#008060";
-    const color = customization.buttonTextColor || "#ffffff";
-    const radius = customization.buttonBorderRadius !== undefined ? customization.buttonBorderRadius + "px" : "4px";
-
     document.querySelectorAll(ADD_TO_CART_SELECTORS).forEach((btn) => {
       if (btn.dataset.quotesnapReplaced) return;
 
@@ -119,19 +115,35 @@
       cta.className = "quotesnap-cta";
       cta.setAttribute("data-quotesnap-cta", "1");
       cta.textContent = label;
-      const fontSize = customization.fontSize ? customization.fontSize + "px" : "1rem";
-      cta.style.cssText = `background:${bg};color:${color};border-radius:${radius};border:none;padding:14px 24px;font-size:${fontSize};font-weight:600;cursor:pointer;width:100%;margin-top:8px;display:block;box-sizing:border-box;`;
       cta.addEventListener("click", openModal);
 
       btn.insertAdjacentElement("afterend", cta);
     });
   }
 
+  function applyCustomizationVars(customization = {}) {
+    const root = document.documentElement;
+    const { buttonBgColor, buttonTextColor, buttonBorderRadius,
+            modalBgColor, modalTextColor, inputBgColor, inputTextColor,
+            fontFamily, fontSize } = customization;
+
+    if (buttonBgColor) root.style.setProperty("--qs-btn-bg", buttonBgColor);
+    if (buttonTextColor) root.style.setProperty("--qs-btn-color", buttonTextColor);
+    if (buttonBorderRadius !== undefined) root.style.setProperty("--qs-btn-radius", buttonBorderRadius + "px");
+    if (modalBgColor) root.style.setProperty("--qs-modal-bg", modalBgColor);
+    if (modalTextColor) {
+      root.style.setProperty("--qs-modal-color", modalTextColor);
+      root.style.setProperty("--qs-label-color", modalTextColor);
+    }
+    if (inputBgColor) root.style.setProperty("--qs-input-bg", inputBgColor);
+    if (inputTextColor) root.style.setProperty("--qs-input-color", inputTextColor);
+    if (fontFamily && fontFamily !== "inherit") root.style.setProperty("--qs-font-family", fontFamily);
+    if (fontSize) root.style.setProperty("--qs-font-size", fontSize + "px");
+  }
+
   function applyModalCustomization(customization = {}) {
     if (!modal) return;
-    const { formTitle, formSubmitLabel, formSuccessMsg, formShowCompany,
-            buttonBgColor, buttonTextColor, buttonBorderRadius,
-            fontFamily, fontSize } = customization;
+    const { formTitle, formSubmitLabel, formSuccessMsg, formShowCompany } = customization;
 
     if (formTitle) {
       const titleEl = modal.querySelector(".quotesnap-modal__title");
@@ -148,20 +160,6 @@
     if (formShowCompany === false) {
       const companyField = modal.querySelector(".quotesnap-field--company");
       if (companyField) companyField.style.display = "none";
-    }
-    // Apply button colours/radius to the modal submit button too
-    const submitBtn = modal.querySelector(".quotesnap-form__submit");
-    if (submitBtn) {
-      if (buttonBgColor) submitBtn.style.background = buttonBgColor;
-      if (buttonTextColor) submitBtn.style.color = buttonTextColor;
-      if (buttonBorderRadius !== undefined) submitBtn.style.borderRadius = buttonBorderRadius + "px";
-    }
-    // Apply font to entire modal
-    if (fontFamily && fontFamily !== "inherit") {
-      modal.style.fontFamily = fontFamily;
-    }
-    if (fontSize) {
-      modal.style.fontSize = fontSize + "px";
     }
   }
 
@@ -275,7 +273,9 @@
     const btnLabel = ruleCustomization.buttonLabel || match.quoteButtonLabel || "Request a Quote";
     if (match.replaceAddToCart) injectQuoteButton(btnLabel, ruleCustomization);
 
-    // Apply modal customization
+    // Apply CSS variable customization (colours, fonts, sizes)
+    applyCustomizationVars(ruleCustomization);
+    // Apply modal text overrides
     applyModalCustomization(ruleCustomization);
 
     root.style.display = "";

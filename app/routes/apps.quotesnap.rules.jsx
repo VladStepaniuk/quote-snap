@@ -32,6 +32,10 @@ export const loader = async ({ request }) => {
         formSubmitLabel: true,
         fontFamily: true,
         fontSize: true,
+        modalBgColor: true,
+        modalTextColor: true,
+        inputBgColor: true,
+        inputTextColor: true,
       },
     }),
     prisma.shopSettings.findUnique({ where: { shop } }),
@@ -65,6 +69,10 @@ export const loader = async ({ request }) => {
       formSubmitLabel: rule.formSubmitLabel || storeDefaults.formSubmitLabel,
       fontFamily: rule.fontFamily || storeDefaults.fontFamily,
       fontSize: rule.fontSize || storeDefaults.fontSize,
+      modalBgColor: rule.modalBgColor || "#ffffff",
+      modalTextColor: rule.modalTextColor || "#111827",
+      inputBgColor: rule.inputBgColor || "#ffffff",
+      inputTextColor: rule.inputTextColor || "#111827",
     },
   }));
 
