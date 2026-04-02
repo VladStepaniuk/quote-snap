@@ -164,7 +164,7 @@
   color: var(--qs-submit-color);
   border: none;
   border-radius: var(--qs-btn-radius);
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 600;
   cursor: pointer;
   transition: opacity 140ms;
@@ -186,7 +186,7 @@
 .quotesnap-success {
   text-align: center;
   padding: 2rem 1rem;
-  font-size: 1.05rem;
+  font-size: 1em;
   color: #008060;
   font-weight: 500;
 }
