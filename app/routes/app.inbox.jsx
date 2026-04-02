@@ -168,7 +168,7 @@ export default function InboxPage() {
                   <div style={s.cardName}>{r.customerName}</div>
                   <span style={s.badge(r.status)}>{STATUS_COLORS[r.status]?.label || r.status}</span>
                 </div>
-                <div style={s.cardMeta}>{r.customerEmail} · {new Date(r.createdAt).toLocaleDateString()}</div>
+                <div style={s.cardMeta}>{r.customerEmail} · {new Date(r.createdAt).toLocaleDateString("en-GB", { timeZone: "UTC" })}</div>
                 <div style={s.cardMsg}>{r.message || "(no message)"}</div>
               </div>
             ))}
@@ -178,7 +178,7 @@ export default function InboxPage() {
           {selected ? (
             <div style={s.detail}>
               <div style={s.detailName}>{selected.customerName}</div>
-              <div style={s.detailMeta}>{selected.customerEmail}{selected.company ? ` · ${selected.company}` : ""} · {new Date(selected.createdAt).toLocaleString()}</div>
+              <div style={s.detailMeta}>{selected.customerEmail}{selected.company ? ` · ${selected.company}` : ""} · {new Date(selected.createdAt).toLocaleString("en-GB", { timeZone: "UTC" })}</div>
               <div style={s.detailMsg}>{selected.message || "(no message)"}</div>
 
               <span style={s.label}>Status</span>
