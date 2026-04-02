@@ -32,11 +32,31 @@ export const loader = async ({ request }) => {
 
   const returnUrl = `https://quote-snap-production.up.railway.app/billing-return?shop=${session.shop}`;
 
-  // Upgrade — create subscription and redirect to Shopify confirmation
+  // Upgrade or downgrade to paid plan
   if (plan && plan !== "free" && PLAN_CONFIG[plan]) {
     const config = PLAN_CONFIG[plan];
     const planName = PLANS[plan]?.name;
     const isTest = process.env.SHOPIFY_BILLING_TEST === "true";
+    const planOrder = { free: 0, starter: 1, pro: 2 };
+
+    // Detect downgrade — if current active plan is higher tier, cancel it and clean up first
+    const active = await getActiveSub(admin);
+    const currentPlanKey = active
+      ? active.name.toLowerCase().includes("pro") ? "pro" : "starter"
+      : "free";
+
+    if (active && planOrder[plan] < planOrder[currentPlanKey]) {
+      // Cancel existing higher-tier sub
+      await admin.graphql(`
+        mutation cancel($id: ID!) {
+          appSubscriptionCancel(id: $id) {
+            appSubscription { id status }
+          }
+        }
+      `, { variables: { id: active.id } });
+      // Reset rules and customization to new plan limits
+      await enforceDowngradeCleanup(session.shop, plan);
+    }
 
     const resp = await admin.graphql(`
       mutation createSub($name: String!, $lineItems: [AppSubscriptionLineItemInput!]!, $returnUrl: URL!, $trialDays: Int, $test: Boolean) {
