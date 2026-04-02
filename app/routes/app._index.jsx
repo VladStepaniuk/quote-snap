@@ -393,20 +393,20 @@ export default function Index() {
   const productLabel = (id) => productMap[id] || id.split("/").pop();
 
   const saveRule = (fd) => {
-    fetcher.submit(fd, { method: "POST", navigate: false });
+    fetcher.submit(fd, { method: "POST", action: "/app", navigate: false });
   };
 
   const deleteRule = (id) => {    const fd = new FormData();
     fd.set("intent", "delete-rule");
     fd.set("id", id);
-    fetcher.submit(fd, { method: "POST", navigate: false });
+    fetcher.submit(fd, { method: "POST", action: "/app", navigate: false });
   };
 
   const deleteRequest = (id) => {
     const fd = new FormData();
     fd.set("intent", "delete-request");
     fd.set("id", id);
-    fetcher.submit(fd, { method: "POST", navigate: false });
+    fetcher.submit(fd, { method: "POST", action: "/app", navigate: false });
   };
 
   const runPreview = () => {
@@ -416,7 +416,7 @@ export default function Index() {
     fd.set("collectionIds", previewInput.collectionIds);
     fd.set("tags", previewInput.tags);
     if (previewInput.loggedIn) fd.set("loggedIn", "on");
-    fetcher.submit(fd, { method: "POST", navigate: false });
+    fetcher.submit(fd, { method: "POST", action: "/app", navigate: false });
   };
 
   const exportCsv = () => {
