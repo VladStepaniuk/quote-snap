@@ -354,12 +354,36 @@ export default function Index() {
   const fetcher = useFetcher();
   const { revalidate } = useRevalidator();
   const { search, pathname } = useLocation();
-  const selfAction = `${pathname}${search}`;
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
   const [statusMessage, setStatusMessage] = useState(null);
   const [statusError, setStatusError] = useState(null);
   const [showAddRule, setShowAddRule] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Direct fetch — bypasses React Router fetcher entirely to avoid iframe navigation issues
+  const postAction = async (fd) => {
+    setSubmitting(true);
+    try {
+      const resp = await fetch(`${pathname}${search}`, { method: "POST", body: fd });
+      const data = await resp.json().catch(() => ({}));
+      if (data.message) {
+        setStatusMessage(data.message);
+        setStatusError(null);
+        setShowAddRule(false);
+        revalidate();
+      } else if (data.error) {
+        setStatusError(data.error);
+        setStatusMessage(null);
+      } else {
+        revalidate();
+      }
+    } catch (err) {
+      setStatusError("Request failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (fetcher.data?.message) {
@@ -394,20 +418,21 @@ export default function Index() {
   const productLabel = (id) => productMap[id] || id.split("/").pop();
 
   const saveRule = (fd) => {
-    fetcher.submit(fd, { method: "POST", action: selfAction, navigate: false });
+    postAction(fd);
   };
 
-  const deleteRule = (id) => {    const fd = new FormData();
+  const deleteRule = (id) => {
+    const fd = new FormData();
     fd.set("intent", "delete-rule");
     fd.set("id", id);
-    fetcher.submit(fd, { method: "POST", action: selfAction, navigate: false });
+    postAction(fd);
   };
 
   const deleteRequest = (id) => {
     const fd = new FormData();
     fd.set("intent", "delete-request");
     fd.set("id", id);
-    fetcher.submit(fd, { method: "POST", action: selfAction, navigate: false });
+    postAction(fd);
   };
 
   const runPreview = () => {
@@ -417,7 +442,7 @@ export default function Index() {
     fd.set("collectionIds", previewInput.collectionIds);
     fd.set("tags", previewInput.tags);
     if (previewInput.loggedIn) fd.set("loggedIn", "on");
-    fetcher.submit(fd, { method: "POST", action: selfAction, navigate: false });
+    postAction(fd);
   };
 
   const exportCsv = () => {
