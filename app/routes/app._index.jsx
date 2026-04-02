@@ -365,7 +365,9 @@ export default function Index() {
   const postAction = async (fd) => {
     setSubmitting(true);
     try {
-      const resp = await fetch(`${pathname}${search}`, { method: "POST", body: fd });
+      // Always POST to /app with the shop/host query params — never use pathname (Shopify mutates it)
+      const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : search);
+      const resp = await fetch(`/app?${params.toString()}`, { method: "POST", body: fd });
       const data = await resp.json().catch(() => ({}));
       if (data.message) {
         setStatusMessage(data.message);
