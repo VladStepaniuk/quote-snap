@@ -173,6 +173,52 @@ async function previewRules(shop, formData) {
   return { ok: true, preview, message: "Preview updated." };
 }
 
+// Called after a downgrade/cancel to enforce plan limits:
+// - Removes rules beyond the new plan's maxRules (oldest by createdAt kept first)
+// - If downgrading off Pro, resets per-rule customization fields to null
+export async function enforceDowngradeCleanup(shop, newPlanKey) {
+  const { PLANS } = await import("../utils/plans.js");
+  const plan = PLANS[newPlanKey] || PLANS.free;
+  const maxRules = plan.maxRules; // null = unlimited
+
+  const allRules = await prisma.quoteRule.findMany({
+    where: { shop },
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+
+  // Delete excess rules (keep the first maxRules by age)
+  if (maxRules !== null && allRules.length > maxRules) {
+    const toDelete = allRules.slice(maxRules).map((r) => r.id);
+    await prisma.quoteRule.deleteMany({ where: { id: { in: toDelete }, shop } });
+  }
+
+  // If dropping off Pro — reset all per-rule customization to defaults
+  if (newPlanKey !== "pro") {
+    await prisma.quoteRule.updateMany({
+      where: { shop },
+      data: {
+        buttonBgColor: null,
+        buttonTextColor: null,
+        buttonBorderRadius: null,
+        submitBgColor: null,
+        submitTextColor: null,
+        modalBgColor: null,
+        modalTextColor: null,
+        inputBgColor: null,
+        inputTextColor: null,
+        fontFamily: null,
+        fontSize: null,
+        buttonFontSize: null,
+        formFontSize: null,
+        formTitle: null,
+        formSuccessMsg: null,
+        formShowCompany: true,
+      },
+    });
+  }
+}
+
 export async function getAnalytics(shop) {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const [total, last30, byProduct] = await Promise.all([

@@ -4,8 +4,8 @@
 import { redirect, useLoaderData, useLocation, useFetcher, useRevalidator } from "react-router";
 import { useEffect, useState } from "react";
 import { authenticate } from "../shopify.server";
-
 import { PLANS } from "../utils/plans";
+import { enforceDowngradeCleanup } from "../models/quotes.server";
 
 const PLAN_CONFIG = {
   starter: { amount: "9.00", trialDays: 7 },
@@ -90,7 +90,24 @@ export const loader = async ({ request }) => {
         }
       `, { variables: { id: active.id } });
     }
+    await enforceDowngradeCleanup(session.shop, "free");
     return Response.json({ cancelled: true });
+  }
+
+  // Downgrade to starter (from pro) — cancel active and create starter sub
+  if (plan === "starter") {
+    const active = await getActiveSub(admin);
+    if (active && active.name.toLowerCase().includes("pro")) {
+      await admin.graphql(`
+        mutation cancel($id: ID!) {
+          appSubscriptionCancel(id: $id) {
+            appSubscription { id status }
+          }
+        }
+      `, { variables: { id: active.id } });
+      await enforceDowngradeCleanup(session.shop, "starter");
+      // Then fall through to create the starter subscription below
+    }
   }
 
   const active = await getActiveSub(admin);
