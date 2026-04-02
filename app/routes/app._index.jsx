@@ -83,7 +83,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
   const [previewRadius, setPreviewRadius] = useState(rule.buttonBorderRadius || "4");
   const [previewLabel, setPreviewLabel] = useState(rule.quoteButtonLabel || "Request a Quote");
   return (
-    <form style={s.ruleCard} onSubmit={(e) => { e.preventDefault(); onSave(e, rule); }}>
+    <form style={s.ruleCard} onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); onSave(e, rule); return false; }}>
       <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
       <div style={s.row2}>
         <label style={{ display: "grid", gap: 4 }}>
@@ -271,14 +271,19 @@ export default function Index() {
 
   const saveRule = (e, rule) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+    e.stopPropagation();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     fd.set("intent", "save-rule");
     fd.set("id", rule.id);
-    fetcher.submit(fd, { method: "POST" });
+    // Capture synchronously before any async/state update
+    const data = Object.fromEntries(fd.entries());
+    const fd2 = new FormData();
+    Object.entries(data).forEach(([k, v]) => fd2.set(k, v));
+    fetcher.submit(fd2, { method: "POST" });
   };
 
-  const deleteRule = (id) => {
-    const fd = new FormData();
+  const deleteRule = (id) => {    const fd = new FormData();
     fd.set("intent", "delete-rule");
     fd.set("id", id);
     fetcher.submit(fd, { method: "POST" });
