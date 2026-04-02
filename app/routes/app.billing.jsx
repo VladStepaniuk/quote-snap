@@ -198,8 +198,17 @@ export default function BillingPage() {
                 </ul>
 
                 {isCurrent ? (
-                  <div style={{ textAlign: "center", fontWeight: 600, color: "#008060", fontSize: "0.875rem" }}>
-                    ✓ Current plan
+                  <div style={{ display: "grid", gap: 8 }}>
+                    <div style={{ textAlign: "center", fontWeight: 600, color: "#008060", fontSize: "0.875rem" }}>
+                      ✓ Current plan
+                    </div>
+                    {plan.key !== "free" && (
+                      <button type="button" disabled={fetcher.state !== "idle"}
+                        onClick={() => setConfirm({ planKey: "free", label: "Cancel subscription", isDowngrade: true })}
+                        style={{ ...s.btn("danger"), fontSize: "0.8rem", padding: "7px 0" }}>
+                        Cancel subscription
+                      </button>
+                    )}
                   </div>
                 ) : isUpgrade ? (
                   <button type="button" disabled={fetcher.state !== "idle"}
@@ -207,11 +216,11 @@ export default function BillingPage() {
                     style={s.btn("primary")}>
                     {fetcher.state !== "idle" ? "Loading…" : `Upgrade to ${plan.name}`}
                   </button>
-                ) : isDowngrade ? (
+                ) : isDowngrade && plan.key !== "free" ? (
                   <button type="button" disabled={fetcher.state !== "idle"}
-                    onClick={() => setConfirm({ planKey: plan.key, label: plan.key === "free" ? "Cancel subscription" : `Downgrade to ${plan.name}`, isDowngrade: true })}
+                    onClick={() => setConfirm({ planKey: plan.key, label: `Downgrade to ${plan.name}`, isDowngrade: true })}
                     style={s.btn("danger")}>
-                    {plan.key === "free" ? "Cancel subscription" : `Downgrade to ${plan.name}`}
+                    {`Downgrade to ${plan.name}`}
                   </button>
                 ) : null}
               </div>
