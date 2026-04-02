@@ -36,6 +36,8 @@ export const loader = async ({ request }) => {
         modalTextColor: true,
         inputBgColor: true,
         inputTextColor: true,
+        submitBgColor: true,
+        submitTextColor: true,
       },
     }),
     prisma.shopSettings.findUnique({ where: { shop } }),
@@ -73,6 +75,8 @@ export const loader = async ({ request }) => {
       modalTextColor: rule.modalTextColor || "#111827",
       inputBgColor: rule.inputBgColor || "#ffffff",
       inputTextColor: rule.inputTextColor || "#111827",
+      submitBgColor: rule.submitBgColor || rule.buttonBgColor || storeDefaults.buttonBgColor,
+      submitTextColor: rule.submitTextColor || rule.buttonTextColor || storeDefaults.buttonTextColor,
     },
   }));
 

@@ -5,6 +5,8 @@
   --qs-btn-bg: #008060;
   --qs-btn-color: #ffffff;
   --qs-btn-radius: 4px;
+  --qs-submit-bg: #008060;
+  --qs-submit-color: #ffffff;
   --qs-modal-bg: #ffffff;
   --qs-modal-color: #111827;
   --qs-input-bg: #ffffff;
@@ -30,6 +32,7 @@
   cursor: pointer;
   transition: opacity 160ms ease;
   margin-top: 8px;
+  margin-bottom: 12px;
   box-sizing: border-box;
   font-family: var(--qs-font-family);
 }
@@ -156,8 +159,8 @@
 
 .quotesnap-form__submit {
   padding: 0.85em 1.5em;
-  background: var(--qs-btn-bg);
-  color: var(--qs-btn-color);
+  background: var(--qs-submit-bg);
+  color: var(--qs-submit-color);
   border: none;
   border-radius: var(--qs-btn-radius);
   font-size: 1rem;

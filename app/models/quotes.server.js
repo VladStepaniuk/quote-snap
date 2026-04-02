@@ -51,6 +51,8 @@ function buildRulePayload(formData, shop) {
     modalTextColor: getTrimmedString(formData, "modalTextColor") || null,
     inputBgColor: getTrimmedString(formData, "inputBgColor") || null,
     inputTextColor: getTrimmedString(formData, "inputTextColor") || null,
+    submitBgColor: getTrimmedString(formData, "submitBgColor") || null,
+    submitTextColor: getTrimmedString(formData, "submitTextColor") || null,
   };
 }
 

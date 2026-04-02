@@ -1,0 +1,2 @@
+ALTER TABLE "QuoteRule" ADD COLUMN IF NOT EXISTS "submitBgColor" TEXT;
+ALTER TABLE "QuoteRule" ADD COLUMN IF NOT EXISTS "submitTextColor" TEXT;

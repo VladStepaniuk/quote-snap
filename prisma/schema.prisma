@@ -61,6 +61,8 @@ model QuoteRule {
   modalTextColor    String?
   inputBgColor      String?
   inputTextColor    String?
+  submitBgColor     String?
+  submitTextColor   String?
 
   @@index([shop])
 }

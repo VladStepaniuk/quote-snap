@@ -185,6 +185,16 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
               </div>
               <div style={s.row2}>
                 <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Submit btn bg</span>
+                  <input type="color" name="submitBgColor" defaultValue={rule.submitBgColor || rule.buttonBgColor || "#008060"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                </label>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Submit btn text</span>
+                  <input type="color" name="submitTextColor" defaultValue={rule.submitTextColor || rule.buttonTextColor || "#ffffff"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                </label>
+              </div>
+              <div style={s.row2}>
+                <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Modal background</span>
                   <input type="color" name="modalBgColor" defaultValue={rule.modalBgColor || "#ffffff"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
                 </label>

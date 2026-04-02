@@ -124,12 +124,16 @@
   function applyCustomizationVars(customization = {}) {
     const root = document.documentElement;
     const { buttonBgColor, buttonTextColor, buttonBorderRadius,
+            submitBgColor, submitTextColor,
             modalBgColor, modalTextColor, inputBgColor, inputTextColor,
             fontFamily, fontSize } = customization;
 
     if (buttonBgColor) root.style.setProperty("--qs-btn-bg", buttonBgColor);
     if (buttonTextColor) root.style.setProperty("--qs-btn-color", buttonTextColor);
     if (buttonBorderRadius !== undefined) root.style.setProperty("--qs-btn-radius", buttonBorderRadius + "px");
+    // Submit button falls back to CTA colours if not set separately
+    root.style.setProperty("--qs-submit-bg", submitBgColor || buttonBgColor || "#008060");
+    root.style.setProperty("--qs-submit-color", submitTextColor || buttonTextColor || "#ffffff");
     if (modalBgColor) root.style.setProperty("--qs-modal-bg", modalBgColor);
     if (modalTextColor) {
       root.style.setProperty("--qs-modal-color", modalTextColor);
