@@ -93,6 +93,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
     formFontSize: rule.formFontSize || rule.fontSize || "16",
     fontFamily: rule.fontFamily || "inherit",
     title: rule.formTitle || "Request a Quote",
+    showCompany: rule.formShowCompany !== false,
   });
   const containerRef = useRef(null);
 
@@ -271,7 +272,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
                   <input style={s.input} name="ruleFormSuccessMsg" defaultValue={rule.formSuccessMsg || ""} placeholder="Thank you! We'll be in touch soon." maxLength={200} />
                 </label>
                 <label style={s.checkLabel}>
-                  <input type="checkbox" name="ruleFormShowCompany" defaultChecked={rule.formShowCompany !== false} style={{ accentColor: "#008060", width: 15, height: 15 }} />
+                  <input type="checkbox" name="ruleFormShowCompany" defaultChecked={rule.formShowCompany !== false} onChange={e => p("showCompany")(e.target.checked)} style={{ accentColor: "#008060", width: 15, height: 15 }} />
                   <span style={{ fontSize: "0.875rem", color: "#374151" }}>Show "Company" field</span>
                 </label>
                 <div style={{ fontSize: "0.7rem", color: "#9ca3af" }}>Leave fields blank to use store defaults.</div>
@@ -292,7 +293,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
                 }}>
                   <div style={{ fontWeight: 700, fontSize: "1.15em", marginBottom: 4, paddingRight: 24 }}>{preview.title}</div>
                   <div style={{ fontSize: "0.82em", opacity: 0.55, marginBottom: 16 }}>Product name here</div>
-                  {[["Name", "Your name"], ["Email", "you@example.com"], ["Company (optional)", "ACME Ltd"]].map(([lbl, ph]) => (
+                  {[["Name", "Your name"], ["Email", "you@example.com"], ...(preview.showCompany ? [["Company (optional)", "ACME Ltd"]] : [])].map(([lbl, ph]) => (
                     <div key={lbl} style={{ marginBottom: 12 }}>
                       <div style={{ fontSize: "0.82em", fontWeight: 600, marginBottom: 4, color: preview.modalColor }}>{lbl}</div>
                       <div style={{
