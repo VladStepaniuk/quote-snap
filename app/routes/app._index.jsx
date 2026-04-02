@@ -15,7 +15,8 @@ export const loader = async ({ request }) => {
     getQuoteDashboardData({ shop: session.shop, admin }),
     getAnalytics(session.shop),
   ]);
-  return Response.json({ ...data, analytics });
+  const appUrl = process.env.SHOPIFY_APP_URL || "https://quote-snap-production.up.railway.app";
+  return Response.json({ ...data, analytics, appUrl });
 };
 
 export const action = async ({ request }) => {
@@ -350,7 +351,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
 }
 
 export default function Index() {
-  const { shop, rules, requests, products, collections, currentPlan, maxRules, analytics } = useLoaderData();
+  const { shop, rules, requests, products, collections, currentPlan, maxRules, analytics, appUrl } = useLoaderData();
   const fetcher = useFetcher();
   const { revalidate } = useRevalidator();
   const { search, pathname } = useLocation();
@@ -361,13 +362,12 @@ export default function Index() {
   const [showAddRule, setShowAddRule] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Direct fetch — bypasses React Router fetcher entirely to avoid iframe navigation issues
+  // Direct fetch to absolute app URL — avoids Shopify admin iframe URL confusion
   const postAction = async (fd) => {
     setSubmitting(true);
     try {
-      // Always POST to /app with the shop/host query params — never use pathname (Shopify mutates it)
       const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : search);
-      const resp = await fetch(`/app?${params.toString()}`, { method: "POST", body: fd });
+      const resp = await fetch(`${appUrl}/app?${params.toString()}`, { method: "POST", body: fd });
       const data = await resp.json().catch(() => ({}));
       if (data.message) {
         setStatusMessage(data.message);
