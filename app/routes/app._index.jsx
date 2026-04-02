@@ -83,7 +83,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
   const [previewRadius, setPreviewRadius] = useState(rule.buttonBorderRadius || "4");
   const [previewLabel, setPreviewLabel] = useState(rule.quoteButtonLabel || "Request a Quote");
   return (
-    <form style={s.ruleCard} onSubmit={(e) => onSave(e, rule)}>
+    <form style={s.ruleCard} onSubmit={(e) => { e.preventDefault(); onSave(e, rule); }}>
       <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
       <div style={s.row2}>
         <label style={{ display: "grid", gap: 4 }}>
@@ -92,7 +92,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
         </label>
         <label style={{ display: "grid", gap: 4 }}>
           <span style={s.label}>Button label</span>
-          <input style={s.input} name="quoteButtonLabel" value={previewLabel} onChange={e => setPreviewLabel(e.target.value)} />
+          <input style={s.input} name="quoteButtonLabel" defaultValue={rule.quoteButtonLabel || "Request a Quote"} onChange={e => setPreviewLabel(e.target.value)} />
         </label>
       </div>
 
@@ -173,20 +173,20 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
                 <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Button bg colour</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <input type="color" name="buttonBgColor" value={previewBg} onChange={e => setPreviewBg(e.target.value)} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                    <input type="color" name="buttonBgColor" defaultValue={rule.buttonBgColor || "#008060"} onChange={e => setPreviewBg(e.target.value)} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
                   </div>
                 </label>
                 <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Button text colour</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <input type="color" name="buttonTextColor" value={previewColor} onChange={e => setPreviewColor(e.target.value)} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                    <input type="color" name="buttonTextColor" defaultValue={rule.buttonTextColor || "#ffffff"} onChange={e => setPreviewColor(e.target.value)} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
                   </div>
                 </label>
               </div>
               <div style={s.row2}>
                 <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Border radius (px)</span>
-                  <input type="number" name="buttonBorderRadius" value={previewRadius} onChange={e => setPreviewRadius(e.target.value)} min="0" max="50" style={{ ...s.input, maxWidth: 100 }} />
+                  <input type="number" name="buttonBorderRadius" defaultValue={rule.buttonBorderRadius || "4"} onChange={e => setPreviewRadius(e.target.value)} min="0" max="50" style={{ ...s.input, maxWidth: 100 }} />
                 </label>
                 <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Font size (px)</span>
