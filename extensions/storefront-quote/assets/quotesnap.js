@@ -119,7 +119,8 @@
       cta.className = "quotesnap-cta";
       cta.setAttribute("data-quotesnap-cta", "1");
       cta.textContent = label;
-      cta.style.cssText = `background:${bg};color:${color};border-radius:${radius};border:none;padding:12px 24px;font-size:1rem;font-weight:600;cursor:pointer;width:100%;`;
+      const fontSize = customization.fontSize ? customization.fontSize + "px" : "1rem";
+      cta.style.cssText = `background:${bg};color:${color};border-radius:${radius};border:none;padding:14px 24px;font-size:${fontSize};font-weight:600;cursor:pointer;width:100%;margin-top:8px;display:block;box-sizing:border-box;`;
       cta.addEventListener("click", openModal);
 
       btn.insertAdjacentElement("afterend", cta);
