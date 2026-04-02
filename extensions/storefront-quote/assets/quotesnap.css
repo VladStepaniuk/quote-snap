@@ -14,7 +14,8 @@
   --qs-input-border: #d1d5db;
   --qs-label-color: #374151;
   --qs-font-family: inherit;
-  --qs-font-size: 1rem;
+  --qs-btn-font-size: 1rem;
+  --qs-form-font-size: 1rem;
 }
 
 /* CTA button */
@@ -22,7 +23,7 @@
   display: block;
   width: 100%;
   padding: 14px 24px;
-  font-size: var(--qs-font-size);
+  font-size: var(--qs-btn-font-size);
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--qs-btn-color);
@@ -78,7 +79,7 @@
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
   font-family: var(--qs-font-family);
-  font-size: var(--qs-font-size);
+  font-size: var(--qs-form-font-size);
 }
 
 .quotesnap-modal__close {
@@ -193,3 +194,5 @@
 .quotesnap-success[hidden] {
   display: none;
 }
+
+

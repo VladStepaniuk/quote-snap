@@ -126,12 +126,11 @@
     const { buttonBgColor, buttonTextColor, buttonBorderRadius,
             submitBgColor, submitTextColor,
             modalBgColor, modalTextColor, inputBgColor, inputTextColor,
-            fontFamily, fontSize } = customization;
+            fontFamily, fontSize, buttonFontSize, formFontSize } = customization;
 
     if (buttonBgColor) root.style.setProperty("--qs-btn-bg", buttonBgColor);
     if (buttonTextColor) root.style.setProperty("--qs-btn-color", buttonTextColor);
     if (buttonBorderRadius !== undefined) root.style.setProperty("--qs-btn-radius", buttonBorderRadius + "px");
-    // Submit button falls back to CTA colours if not set separately
     root.style.setProperty("--qs-submit-bg", submitBgColor || buttonBgColor || "#008060");
     root.style.setProperty("--qs-submit-color", submitTextColor || buttonTextColor || "#ffffff");
     if (modalBgColor) root.style.setProperty("--qs-modal-bg", modalBgColor);
@@ -142,7 +141,11 @@
     if (inputBgColor) root.style.setProperty("--qs-input-bg", inputBgColor);
     if (inputTextColor) root.style.setProperty("--qs-input-color", inputTextColor);
     if (fontFamily && fontFamily !== "inherit") root.style.setProperty("--qs-font-family", fontFamily);
-    if (fontSize) root.style.setProperty("--qs-font-size", fontSize + "px");
+    // Separate font sizes for button vs form; fall back to legacy `fontSize` if specific ones not set
+    const resolvedBtnSize = buttonFontSize || fontSize;
+    const resolvedFormSize = formFontSize || fontSize;
+    if (resolvedBtnSize) root.style.setProperty("--qs-btn-font-size", resolvedBtnSize + "px");
+    if (resolvedFormSize) root.style.setProperty("--qs-form-font-size", resolvedFormSize + "px");
   }
 
   function applyModalCustomization(customization = {}) {

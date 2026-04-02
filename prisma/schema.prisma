@@ -63,6 +63,8 @@ model QuoteRule {
   inputTextColor    String?
   submitBgColor     String?
   submitTextColor   String?
+  buttonFontSize    String?
+  formFontSize      String?
 
   @@index([shop])
 }

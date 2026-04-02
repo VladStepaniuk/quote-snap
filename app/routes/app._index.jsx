@@ -239,8 +239,12 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
                   <input type="number" name="buttonBorderRadius" defaultValue={rule.buttonBorderRadius || "4"} onChange={e => setPreviewRadius(e.target.value)} min="0" max="50" style={{ ...s.input, maxWidth: 100 }} />
                 </label>
                 <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Font size (px)</span>
-                  <input type="number" name="ruleFontSize" defaultValue={rule.fontSize || "16"} min="12" max="24" style={{ ...s.input, maxWidth: 100 }} />
+                  <span style={s.label}>Button font size (px)</span>
+                  <input type="number" name="buttonFontSize" defaultValue={rule.buttonFontSize || rule.fontSize || "16"} min="12" max="32" style={{ ...s.input, maxWidth: 100 }} />
+                </label>
+                <label style={{ display: "grid", gap: 4 }}>
+                  <span style={s.label}>Form font size (px)</span>
+                  <input type="number" name="formFontSize" defaultValue={rule.formFontSize || rule.fontSize || "16"} min="12" max="32" style={{ ...s.input, maxWidth: 100 }} />
                 </label>
               </div>
               <label style={{ display: "grid", gap: 4 }}>

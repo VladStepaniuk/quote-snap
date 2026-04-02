@@ -53,6 +53,8 @@ function buildRulePayload(formData, shop) {
     inputTextColor: getTrimmedString(formData, "inputTextColor") || null,
     submitBgColor: getTrimmedString(formData, "submitBgColor") || null,
     submitTextColor: getTrimmedString(formData, "submitTextColor") || null,
+    buttonFontSize: getTrimmedString(formData, "buttonFontSize") || null,
+    formFontSize: getTrimmedString(formData, "formFontSize") || null,
   };
 }
 

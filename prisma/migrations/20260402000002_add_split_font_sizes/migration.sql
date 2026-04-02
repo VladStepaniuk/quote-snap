@@ -1,0 +1,2 @@
+ALTER TABLE "QuoteRule" ADD COLUMN IF NOT EXISTS "buttonFontSize" TEXT;
+ALTER TABLE "QuoteRule" ADD COLUMN IF NOT EXISTS "formFontSize" TEXT;
