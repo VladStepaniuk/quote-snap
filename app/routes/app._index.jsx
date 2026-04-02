@@ -106,7 +106,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
       <div style={s.row3}>
         <label style={{ display: "grid", gap: 4 }}>
           <span style={s.label}>Scope</span>
-          <select style={s.select} name="scope" value={scope} onChange={(e) => setScope(e.target.value)}>
+          <select style={s.select} name="scope" defaultValue={rule.scope || "all_products"} onChange={(e) => setScope(e.target.value)}>
             <option value="all_products">All products</option>
             <option value="product">Specific product</option>
             <option value="collection">Collection</option>
