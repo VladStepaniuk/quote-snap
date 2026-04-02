@@ -1,7 +1,7 @@
 /**
  * Billing route — GET ?plan=starter|pro triggers subscription via GraphQL
  */
-import { redirect, useLoaderData, useLocation, useFetcher } from "react-router";
+import { redirect, useLoaderData, useLocation, useFetcher, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { authenticate } from "../shopify.server";
 
@@ -90,7 +90,7 @@ export const loader = async ({ request }) => {
         }
       `, { variables: { id: active.id } });
     }
-    return redirect("/app");
+    return Response.json({ cancelled: true });
   }
 
   const active = await getActiveSub(admin);
@@ -107,11 +107,15 @@ export default function BillingPage() {
   const { plans, currentPlan } = useLoaderData();
   const { search } = useLocation();
   const fetcher = useFetcher();
+  const navigate = useNavigate();
   const [confirm, setConfirm] = useState(null); // { planKey, label, isDowngrade }
 
   useEffect(() => {
     if (fetcher.data?.confirmationUrl) {
       window.top.location.href = fetcher.data.confirmationUrl;
+    }
+    if (fetcher.data?.cancelled) {
+      navigate(`/app/billing${search}`, { replace: true });
     }
   }, [fetcher.data]);
 
