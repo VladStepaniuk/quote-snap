@@ -2,7 +2,7 @@
  * Billing route — GET ?plan=starter|pro triggers subscription via GraphQL
  */
 import { redirect, useLoaderData, useLocation, useFetcher } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { authenticate } from "../shopify.server";
 
 import { PLANS } from "../utils/plans";
@@ -107,6 +107,7 @@ export default function BillingPage() {
   const { plans, currentPlan } = useLoaderData();
   const { search } = useLocation();
   const fetcher = useFetcher();
+  const [confirm, setConfirm] = useState(null); // { planKey, label, isDowngrade }
 
   useEffect(() => {
     if (fetcher.data?.confirmationUrl) {
@@ -127,6 +128,34 @@ export default function BillingPage() {
     { key: "pro", ...plans.pro },
   ];
 
+  const doAction = (planKey) => {
+    setConfirm(null);
+    fetcher.load(planHref(planKey));
+  };
+
+  const s = {
+    btn: (variant) => ({
+      width: "100%",
+      padding: "10px 0",
+      background: variant === "primary" ? "#008060" : variant === "danger" ? "#fff" : "#f3f4f6",
+      color: variant === "primary" ? "#fff" : variant === "danger" ? "#b91c1c" : "#374151",
+      border: variant === "danger" ? "1px solid #fca5a5" : "none",
+      borderRadius: 8,
+      fontWeight: 600,
+      fontSize: "0.875rem",
+      cursor: fetcher.state !== "idle" ? "wait" : "pointer",
+      opacity: fetcher.state !== "idle" ? 0.7 : 1,
+    }),
+    overlay: {
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000,
+      display: "flex", alignItems: "center", justifyContent: "center",
+    },
+    modal: {
+      background: "#fff", borderRadius: 12, padding: 28, maxWidth: 400, width: "90%",
+      display: "grid", gap: 16,
+    },
+  };
+
   return (
     <s-page heading="Billing" inlineSize="base">
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "24px 16px", display: "grid", gap: 16 }}>
@@ -138,6 +167,8 @@ export default function BillingPage() {
           {planList.map((plan) => {
             const isCurrent = currentPlan === plan.key;
             const isUpgrade = planOrder[plan.key] > planOrder[currentPlan];
+            const isDowngrade = planOrder[plan.key] < planOrder[currentPlan];
+
             return (
               <div
                 key={plan.key}
@@ -171,35 +202,48 @@ export default function BillingPage() {
                     ✓ Current plan
                   </div>
                 ) : isUpgrade ? (
-                  <button
-                    type="button"
-                    disabled={fetcher.state !== "idle"}
-                    onClick={() => fetcher.load(planHref(plan.key))}
-                    style={{
-                      width: "100%",
-                      padding: "10px 0",
-                      background: "#008060",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 8,
-                      fontWeight: 600,
-                      fontSize: "0.875rem",
-                      cursor: fetcher.state !== "idle" ? "wait" : "pointer",
-                      opacity: fetcher.state !== "idle" ? 0.7 : 1,
-                    }}
-                  >
+                  <button type="button" disabled={fetcher.state !== "idle"}
+                    onClick={() => setConfirm({ planKey: plan.key, label: `Upgrade to ${plan.name}`, isDowngrade: false })}
+                    style={s.btn("primary")}>
                     {fetcher.state !== "idle" ? "Loading…" : `Upgrade to ${plan.name}`}
                   </button>
-                ) : (
-                  <div style={{ textAlign: "center", fontSize: "0.8rem", color: "#9ca3af" }}>
-                    To downgrade, cancel your subscription via Shopify settings.
-                  </div>
-                )}
+                ) : isDowngrade ? (
+                  <button type="button" disabled={fetcher.state !== "idle"}
+                    onClick={() => setConfirm({ planKey: plan.key, label: plan.key === "free" ? "Cancel subscription" : `Downgrade to ${plan.name}`, isDowngrade: true })}
+                    style={s.btn("danger")}>
+                    {plan.key === "free" ? "Cancel subscription" : `Downgrade to ${plan.name}`}
+                  </button>
+                ) : null}
               </div>
             );
           })}
         </div>
       </div>
+
+      {confirm && (
+        <div style={s.overlay} onClick={() => setConfirm(null)}>
+          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontWeight: 700, fontSize: "1.1rem" }}>Confirm plan change</div>
+            <p style={{ margin: 0, color: "#374151", fontSize: "0.9rem" }}>
+              {confirm.planKey === "free"
+                ? "Are you sure you want to cancel your subscription? You will lose access to paid features immediately."
+                : confirm.isDowngrade
+                ? `Are you sure you want to downgrade to ${planList.find(p => p.key === confirm.planKey)?.name}? Some features may no longer be available.`
+                : `You will be redirected to Shopify to confirm your upgrade.`}
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button type="button" onClick={() => setConfirm(null)}
+                style={{ padding: "8px 18px", border: "1px solid #e3e7ed", borderRadius: 7, background: "#fff", cursor: "pointer", fontWeight: 600 }}>
+                Cancel
+              </button>
+              <button type="button" onClick={() => doAction(confirm.planKey)}
+                style={{ padding: "8px 18px", border: "none", borderRadius: 7, background: confirm.isDowngrade ? "#b91c1c" : "#008060", color: "#fff", cursor: "pointer", fontWeight: 600 }}>
+                {confirm.label}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </s-page>
   );
 }
