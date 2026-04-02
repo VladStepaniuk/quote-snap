@@ -78,29 +78,55 @@ const FONT_OPTIONS = [
 function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collections }) {
   const [scope, setScope] = useState(rule.scope || "all_products");
   const [showCustom, setShowCustom] = useState(false);
-  const [previewBg, setPreviewBg] = useState(rule.buttonBgColor || "#008060");
-  const [previewColor, setPreviewColor] = useState(rule.buttonTextColor || "#ffffff");
-  const [previewRadius, setPreviewRadius] = useState(rule.buttonBorderRadius || "4");
-  const [previewLabel, setPreviewLabel] = useState(rule.quoteButtonLabel || "Request a Quote");
+  const [preview, setPreview] = useState({
+    btnBg: rule.buttonBgColor || "#008060",
+    btnColor: rule.buttonTextColor || "#ffffff",
+    btnRadius: rule.buttonBorderRadius || "4",
+    btnLabel: rule.quoteButtonLabel || "Request a Quote",
+    btnFontSize: rule.buttonFontSize || rule.fontSize || "16",
+    submitBg: rule.submitBgColor || rule.buttonBgColor || "#008060",
+    submitColor: rule.submitTextColor || rule.buttonTextColor || "#ffffff",
+    modalBg: rule.modalBgColor || "#ffffff",
+    modalColor: rule.modalTextColor || "#111827",
+    inputBg: rule.inputBgColor || "#ffffff",
+    inputColor: rule.inputTextColor || "#111827",
+    formFontSize: rule.formFontSize || rule.fontSize || "16",
+    fontFamily: rule.fontFamily || "inherit",
+    title: rule.formTitle || "Request a Quote",
+  });
   const containerRef = useRef(null);
+
+  const p = (key) => (val) => setPreview(prev => ({ ...prev, [key]: val }));
 
   const handleSave = () => {
     const container = containerRef.current;
     if (!container) return;
     const fd = new FormData();
-    // Collect all inputs, selects, textareas
     container.querySelectorAll("input, select, textarea").forEach((el) => {
       if (!el.name) return;
-      if (el.type === "checkbox") {
-        if (el.checked) fd.set(el.name, "on");
-      } else {
-        fd.set(el.name, el.value);
-      }
+      if (el.type === "checkbox") { if (el.checked) fd.set(el.name, "on"); }
+      else fd.set(el.name, el.value);
     });
     fd.set("intent", "save-rule");
     fd.set("id", rule.id);
     onSave(fd);
   };
+
+  const colorRow = (items) => (
+    <div style={{ display: "grid", gridTemplateColumns: `repeat(${items.length}, 1fr)`, gap: 8, marginBottom: 8 }}>
+      {items.map(({ label, name, val, key, defaultVal }) => (
+        <label key={name} style={{ display: "grid", gap: 3 }}>
+          <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#6d7175", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input type="color" name={name} defaultValue={defaultVal}
+              onChange={e => key && p(key)(e.target.value)}
+              style={{ width: 36, height: 30, borderRadius: 5, border: "1px solid #d1d5db", cursor: "pointer", padding: 2, flexShrink: 0 }} />
+            <span style={{ fontSize: "0.72rem", color: "#6d7175", fontFamily: "monospace" }}>{val}</span>
+          </div>
+        </label>
+      ))}
+    </div>
+  );
 
   return (
     <div ref={containerRef} style={s.ruleCard}>
@@ -112,15 +138,15 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
         </label>
         <label style={{ display: "grid", gap: 4 }}>
           <span style={s.label}>Button label</span>
-          <input style={s.input} name="quoteButtonLabel" defaultValue={rule.quoteButtonLabel || "Request a Quote"} onChange={e => setPreviewLabel(e.target.value)} />
+          <input style={s.input} name="quoteButtonLabel" defaultValue={rule.quoteButtonLabel || "Request a Quote"} onChange={e => p("btnLabel")(e.target.value)} />
         </label>
       </div>
 
       {/* Live button preview */}
       <div style={{ background: "#f9fafb", border: "1px solid #e3e7ed", borderRadius: 8, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-        <span style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: 600, whiteSpace: "nowrap" }}>Preview:</span>
-        <button type="button" style={{ background: previewBg, color: previewColor, border: "none", borderRadius: `${previewRadius}px`, padding: "9px 20px", fontWeight: 600, fontSize: "0.9rem", cursor: "default" }}>
-          {previewLabel || "Request a Quote"}
+        <span style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: 600, whiteSpace: "nowrap" }}>Button:</span>
+        <button type="button" style={{ background: preview.btnBg, color: preview.btnColor, border: "none", borderRadius: `${preview.btnRadius}px`, padding: "10px 20px", fontWeight: 600, fontSize: `${preview.btnFontSize}px`, cursor: "default", fontFamily: preview.fontFamily !== "inherit" ? preview.fontFamily : undefined }}>
+          {preview.btnLabel || "Request a Quote"}
         </button>
       </div>
       <div style={s.row3}>
@@ -184,88 +210,130 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
       {/* Per-rule customization — Pro only */}
       {isPro ? (
         <div style={{ marginTop: 12, borderTop: "1px solid #f1f2f3", paddingTop: 10 }}>
-          <button type="button" onClick={() => setShowCustom(v => !v)} style={{ background: "none", border: "1px solid #008060", borderRadius: 6, cursor: "pointer", color: "#008060", fontWeight: 600, fontSize: "0.8rem", padding: "4px 10px", display: "flex", alignItems: "center", gap: 4 }}>
+          <button type="button" onClick={() => setShowCustom(v => !v)} style={{ background: showCustom ? "#f0f9f6" : "none", border: "1px solid #008060", borderRadius: 6, cursor: "pointer", color: "#008060", fontWeight: 600, fontSize: "0.8rem", padding: "4px 10px", display: "flex", alignItems: "center", gap: 4 }}>
             {showCustom ? "▾" : "▸"} Customize button &amp; form
           </button>
           {showCustom && (
-            <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
-              <div style={s.row2}>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Button bg colour</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <input type="color" name="buttonBgColor" defaultValue={rule.buttonBgColor || "#008060"} onChange={e => setPreviewBg(e.target.value)} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+            <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
+
+              {/* Left: controls */}
+              <div style={{ display: "grid", gap: 10 }}>
+
+                <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>🎨 Button</div>
+                {colorRow([
+                  { label: "Background", name: "buttonBgColor", val: preview.btnBg, key: "btnBg", defaultVal: rule.buttonBgColor || "#008060" },
+                  { label: "Text", name: "buttonTextColor", val: preview.btnColor, key: "btnColor", defaultVal: rule.buttonTextColor || "#ffffff" },
+                ])}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <label style={{ display: "grid", gap: 3 }}>
+                    <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#6d7175", textTransform: "uppercase" }}>Radius (px)</span>
+                    <input type="number" name="buttonBorderRadius" defaultValue={rule.buttonBorderRadius || "4"} min="0" max="50" onChange={e => p("btnRadius")(e.target.value)} style={{ ...s.input, maxWidth: "100%" }} />
+                  </label>
+                  <label style={{ display: "grid", gap: 3 }}>
+                    <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#6d7175", textTransform: "uppercase" }}>Font size (px)</span>
+                    <input type="number" name="buttonFontSize" defaultValue={rule.buttonFontSize || rule.fontSize || "16"} min="12" max="32" onChange={e => p("btnFontSize")(e.target.value)} style={{ ...s.input, maxWidth: "100%" }} />
+                  </label>
+                </div>
+
+                <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4, marginBottom: 2 }}>📝 Form</div>
+                {colorRow([
+                  { label: "Modal bg", name: "modalBgColor", val: preview.modalBg, key: "modalBg", defaultVal: rule.modalBgColor || "#ffffff" },
+                  { label: "Text colour", name: "modalTextColor", val: preview.modalColor, key: "modalColor", defaultVal: rule.modalTextColor || "#111827" },
+                ])}
+                {colorRow([
+                  { label: "Input bg", name: "inputBgColor", val: preview.inputBg, key: "inputBg", defaultVal: rule.inputBgColor || "#ffffff" },
+                  { label: "Input text", name: "inputTextColor", val: preview.inputColor, key: "inputColor", defaultVal: rule.inputTextColor || "#111827" },
+                ])}
+                {colorRow([
+                  { label: "Submit bg", name: "submitBgColor", val: preview.submitBg, key: "submitBg", defaultVal: rule.submitBgColor || rule.buttonBgColor || "#008060" },
+                  { label: "Submit text", name: "submitTextColor", val: preview.submitColor, key: "submitColor", defaultVal: rule.submitTextColor || rule.buttonTextColor || "#ffffff" },
+                ])}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <label style={{ display: "grid", gap: 3 }}>
+                    <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#6d7175", textTransform: "uppercase" }}>Form font (px)</span>
+                    <input type="number" name="formFontSize" defaultValue={rule.formFontSize || rule.fontSize || "16"} min="12" max="32" onChange={e => p("formFontSize")(e.target.value)} style={{ ...s.input, maxWidth: "100%" }} />
+                  </label>
+                  <label style={{ display: "grid", gap: 3 }}>
+                    <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#6d7175", textTransform: "uppercase" }}>Font family</span>
+                    <select name="ruleFontFamily" defaultValue={rule.fontFamily || "inherit"} onChange={e => p("fontFamily")(e.target.value)} style={s.select}>
+                      {FONT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </label>
+                </div>
+
+                <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4, marginBottom: 2 }}>✏️ Text</div>
+                <label style={{ display: "grid", gap: 3 }}>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#6d7175", textTransform: "uppercase" }}>Form title</span>
+                  <input style={s.input} name="ruleFormTitle" defaultValue={rule.formTitle || ""} placeholder="Request a Quote" maxLength={80} onChange={e => p("title")(e.target.value || "Request a Quote")} />
+                </label>
+                <label style={{ display: "grid", gap: 3 }}>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#6d7175", textTransform: "uppercase" }}>Success message</span>
+                  <input style={s.input} name="ruleFormSuccessMsg" defaultValue={rule.formSuccessMsg || ""} placeholder="Thank you! We'll be in touch soon." maxLength={200} />
+                </label>
+                <label style={s.checkLabel}>
+                  <input type="checkbox" name="ruleFormShowCompany" defaultChecked={rule.formShowCompany !== false} style={{ accentColor: "#008060", width: 15, height: 15 }} />
+                  <span style={{ fontSize: "0.875rem", color: "#374151" }}>Show "Company" field</span>
+                </label>
+                <div style={{ fontSize: "0.7rem", color: "#9ca3af" }}>Leave fields blank to use store defaults.</div>
+              </div>
+
+              {/* Right: live form preview */}
+              <div style={{ position: "sticky", top: 16 }}>
+                <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>👁 Live preview</div>
+                <div style={{
+                  background: preview.modalBg,
+                  color: preview.modalColor,
+                  borderRadius: 12,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.14)",
+                  padding: "20px",
+                  fontFamily: preview.fontFamily !== "inherit" ? preview.fontFamily : "-apple-system, sans-serif",
+                  fontSize: `${preview.formFontSize}px`,
+                  border: "1px solid rgba(0,0,0,0.06)",
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: "1.15em", marginBottom: 4, paddingRight: 24 }}>{preview.title}</div>
+                  <div style={{ fontSize: "0.82em", opacity: 0.55, marginBottom: 16 }}>Product name here</div>
+                  {[["Name", "Your name"], ["Email", "you@example.com"], ["Company (optional)", "ACME Ltd"]].map(([lbl, ph]) => (
+                    <div key={lbl} style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: "0.82em", fontWeight: 600, marginBottom: 4, color: preview.modalColor }}>{lbl}</div>
+                      <div style={{
+                        background: preview.inputBg,
+                        color: preview.inputColor,
+                        border: `1.5px solid #d1d5db`,
+                        borderRadius: 6,
+                        padding: "8px 10px",
+                        fontSize: "0.95em",
+                        opacity: 0.7,
+                      }}>{ph}</div>
+                    </div>
+                  ))}
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: "0.82em", fontWeight: 600, marginBottom: 4, color: preview.modalColor }}>Message</div>
+                    <div style={{
+                      background: preview.inputBg,
+                      color: preview.inputColor,
+                      border: "1.5px solid #d1d5db",
+                      borderRadius: 6,
+                      padding: "8px 10px",
+                      fontSize: "0.95em",
+                      height: 56,
+                      opacity: 0.7,
+                    }}></div>
                   </div>
-                </label>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Button text colour</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <input type="color" name="buttonTextColor" defaultValue={rule.buttonTextColor || "#ffffff"} onChange={e => setPreviewColor(e.target.value)} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
-                  </div>
-                </label>
+                  <button type="button" style={{
+                    background: preview.submitBg,
+                    color: preview.submitColor,
+                    border: "none",
+                    borderRadius: `${preview.btnRadius}px`,
+                    padding: "10px 16px",
+                    fontWeight: 600,
+                    fontSize: "0.95em",
+                    width: "100%",
+                    cursor: "default",
+                    fontFamily: "inherit",
+                  }}>Submit Request</button>
+                </div>
               </div>
-              <div style={s.row2}>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Submit btn bg</span>
-                  <input type="color" name="submitBgColor" defaultValue={rule.submitBgColor || rule.buttonBgColor || "#008060"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
-                </label>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Submit btn text</span>
-                  <input type="color" name="submitTextColor" defaultValue={rule.submitTextColor || rule.buttonTextColor || "#ffffff"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
-                </label>
-              </div>
-              <div style={s.row2}>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Modal background</span>
-                  <input type="color" name="modalBgColor" defaultValue={rule.modalBgColor || "#ffffff"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
-                </label>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Modal text colour</span>
-                  <input type="color" name="modalTextColor" defaultValue={rule.modalTextColor || "#111827"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
-                </label>
-              </div>
-              <div style={s.row2}>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Input background</span>
-                  <input type="color" name="inputBgColor" defaultValue={rule.inputBgColor || "#ffffff"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
-                </label>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Input text colour</span>
-                  <input type="color" name="inputTextColor" defaultValue={rule.inputTextColor || "#111827"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
-                </label>
-              </div>
-              <div style={s.row2}>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Border radius (px)</span>
-                  <input type="number" name="buttonBorderRadius" defaultValue={rule.buttonBorderRadius || "4"} onChange={e => setPreviewRadius(e.target.value)} min="0" max="50" style={{ ...s.input, maxWidth: 100 }} />
-                </label>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Button font size (px)</span>
-                  <input type="number" name="buttonFontSize" defaultValue={rule.buttonFontSize || rule.fontSize || "16"} min="12" max="32" style={{ ...s.input, maxWidth: 100 }} />
-                </label>
-                <label style={{ display: "grid", gap: 4 }}>
-                  <span style={s.label}>Form font size (px)</span>
-                  <input type="number" name="formFontSize" defaultValue={rule.formFontSize || rule.fontSize || "16"} min="12" max="32" style={{ ...s.input, maxWidth: 100 }} />
-                </label>
-              </div>
-              <label style={{ display: "grid", gap: 4 }}>
-                <span style={s.label}>Font family</span>
-                <select name="ruleFontFamily" defaultValue={rule.fontFamily || "inherit"} style={s.select}>
-                  {FONT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </label>
-              <label style={{ display: "grid", gap: 4 }}>
-                <span style={s.label}>Modal title</span>
-                <input style={s.input} name="ruleFormTitle" defaultValue={rule.formTitle || ""} placeholder="Request a Quote" maxLength={80} />
-              </label>
-              <label style={{ display: "grid", gap: 4 }}>
-                <span style={s.label}>Success message</span>
-                <input style={s.input} name="ruleFormSuccessMsg" defaultValue={rule.formSuccessMsg || ""} placeholder="Thank you! We'll be in touch soon." maxLength={200} />
-              </label>
-              <label style={s.checkLabel}>
-                <input type="checkbox" name="ruleFormShowCompany" defaultChecked={rule.formShowCompany !== false} style={{ accentColor: "#008060", width: 15, height: 15 }} />
-                <span style={{ fontSize: "0.875rem", color: "#374151" }}>Show "Company" field</span>
-              </label>
-              <div style={{ fontSize: "0.75rem", color: "#9ca3af" }}>Leave blank to use store defaults.</div>
+
             </div>
           )}
         </div>
