@@ -1,7 +1,7 @@
 /**
  * Billing route — GET ?plan=starter|pro triggers subscription via GraphQL
  */
-import { redirect, useLoaderData, useLocation, useFetcher, useNavigate } from "react-router";
+import { redirect, useLoaderData, useLocation, useFetcher, useRevalidator } from "react-router";
 import { useEffect, useState } from "react";
 import { authenticate } from "../shopify.server";
 
@@ -107,7 +107,7 @@ export default function BillingPage() {
   const { plans, currentPlan } = useLoaderData();
   const { search } = useLocation();
   const fetcher = useFetcher();
-  const navigate = useNavigate();
+  const { revalidate } = useRevalidator();
   const [confirm, setConfirm] = useState(null); // { planKey, label, isDowngrade }
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function BillingPage() {
       window.top.location.href = fetcher.data.confirmationUrl;
     }
     if (fetcher.data?.cancelled) {
-      navigate(`/app/billing${search}`, { replace: true });
+      revalidate();
     }
   }, [fetcher.data]);
 
