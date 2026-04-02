@@ -78,6 +78,10 @@ const FONT_OPTIONS = [
 function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collections }) {
   const [scope, setScope] = useState(rule.scope || "all_products");
   const [showCustom, setShowCustom] = useState(false);
+  const [previewBg, setPreviewBg] = useState(rule.buttonBgColor || "#008060");
+  const [previewColor, setPreviewColor] = useState(rule.buttonTextColor || "#ffffff");
+  const [previewRadius, setPreviewRadius] = useState(rule.buttonBorderRadius || "4");
+  const [previewLabel, setPreviewLabel] = useState(rule.quoteButtonLabel || "Request a Quote");
   return (
     <form style={s.ruleCard} onSubmit={(e) => onSave(e, rule)}>
       <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
@@ -88,8 +92,16 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
         </label>
         <label style={{ display: "grid", gap: 4 }}>
           <span style={s.label}>Button label</span>
-          <input style={s.input} name="quoteButtonLabel" defaultValue={rule.quoteButtonLabel || "Request a Quote"} />
+          <input style={s.input} name="quoteButtonLabel" value={previewLabel} onChange={e => setPreviewLabel(e.target.value)} />
         </label>
+      </div>
+
+      {/* Live button preview */}
+      <div style={{ background: "#f9fafb", border: "1px solid #e3e7ed", borderRadius: 8, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: 600, whiteSpace: "nowrap" }}>Preview:</span>
+        <button type="button" style={{ background: previewBg, color: previewColor, border: "none", borderRadius: `${previewRadius}px`, padding: "9px 20px", fontWeight: 600, fontSize: "0.9rem", cursor: "default" }}>
+          {previewLabel || "Request a Quote"}
+        </button>
       </div>
       <div style={s.row3}>
         <label style={{ display: "grid", gap: 4 }}>
@@ -152,7 +164,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
       {/* Per-rule customization — Pro only */}
       {isPro ? (
         <div style={{ marginTop: 12, borderTop: "1px solid #f1f2f3", paddingTop: 10 }}>
-          <button type="button" onClick={() => setShowCustom(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: "#008060", fontWeight: 600, fontSize: "0.8rem", padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
+          <button type="button" onClick={() => setShowCustom(v => !v)} style={{ background: "none", border: "1px solid #008060", borderRadius: 6, cursor: "pointer", color: "#008060", fontWeight: 600, fontSize: "0.8rem", padding: "4px 10px", display: "flex", alignItems: "center", gap: 4 }}>
             {showCustom ? "▾" : "▸"} Customize button &amp; form
           </button>
           {showCustom && (
@@ -161,20 +173,20 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
                 <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Button bg colour</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <input type="color" name="buttonBgColor" defaultValue={rule.buttonBgColor || "#008060"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                    <input type="color" name="buttonBgColor" value={previewBg} onChange={e => setPreviewBg(e.target.value)} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
                   </div>
                 </label>
                 <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Button text colour</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <input type="color" name="buttonTextColor" defaultValue={rule.buttonTextColor || "#ffffff"} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
+                    <input type="color" name="buttonTextColor" value={previewColor} onChange={e => setPreviewColor(e.target.value)} style={{ width: 40, height: 34, borderRadius: 6, border: "1px solid #e3e7ed", cursor: "pointer", padding: 0 }} />
                   </div>
                 </label>
               </div>
               <div style={s.row2}>
                 <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Border radius (px)</span>
-                  <input type="number" name="buttonBorderRadius" defaultValue={rule.buttonBorderRadius || "4"} min="0" max="50" style={{ ...s.input, maxWidth: 100 }} />
+                  <input type="number" name="buttonBorderRadius" value={previewRadius} onChange={e => setPreviewRadius(e.target.value)} min="0" max="50" style={{ ...s.input, maxWidth: 100 }} />
                 </label>
                 <label style={{ display: "grid", gap: 4 }}>
                   <span style={s.label}>Font size (px)</span>
@@ -192,10 +204,6 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
                 <input style={s.input} name="ruleFormTitle" defaultValue={rule.formTitle || ""} placeholder="Request a Quote" maxLength={80} />
               </label>
               <label style={{ display: "grid", gap: 4 }}>
-                <span style={s.label}>Submit button label</span>
-                <input style={s.input} name="ruleFormSubmitLabel" defaultValue={rule.formSubmitLabel || ""} placeholder="Submit Request" maxLength={80} />
-              </label>
-              <label style={{ display: "grid", gap: 4 }}>
                 <span style={s.label}>Success message</span>
                 <input style={s.input} name="ruleFormSuccessMsg" defaultValue={rule.formSuccessMsg || ""} placeholder="Thank you! We'll be in touch soon." maxLength={200} />
               </label>
@@ -203,7 +211,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
                 <input type="checkbox" name="ruleFormShowCompany" defaultChecked={rule.formShowCompany !== false} style={{ accentColor: "#008060", width: 15, height: 15 }} />
                 <span style={{ fontSize: "0.875rem", color: "#374151" }}>Show "Company" field</span>
               </label>
-              <div style={{ fontSize: "0.75rem", color: "#9ca3af" }}>Leave blank to use store defaults from the Customization tab.</div>
+              <div style={{ fontSize: "0.75rem", color: "#9ca3af" }}>Leave blank to use store defaults.</div>
             </div>
           )}
         </div>
