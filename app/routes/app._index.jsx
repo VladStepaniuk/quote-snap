@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFetcher, useLoaderData, useRevalidator, useLocation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
@@ -82,8 +82,28 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
   const [previewColor, setPreviewColor] = useState(rule.buttonTextColor || "#ffffff");
   const [previewRadius, setPreviewRadius] = useState(rule.buttonBorderRadius || "4");
   const [previewLabel, setPreviewLabel] = useState(rule.quoteButtonLabel || "Request a Quote");
+  const containerRef = useRef(null);
+
+  const handleSave = () => {
+    const container = containerRef.current;
+    if (!container) return;
+    const fd = new FormData();
+    // Collect all inputs, selects, textareas
+    container.querySelectorAll("input, select, textarea").forEach((el) => {
+      if (!el.name) return;
+      if (el.type === "checkbox") {
+        if (el.checked) fd.set(el.name, "on");
+      } else {
+        fd.set(el.name, el.value);
+      }
+    });
+    fd.set("intent", "save-rule");
+    fd.set("id", rule.id);
+    onSave(fd);
+  };
+
   return (
-    <form style={s.ruleCard} onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); onSave(e, rule); return false; }}>
+    <div ref={containerRef} style={s.ruleCard}>
       <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
       <div style={s.row2}>
         <label style={{ display: "grid", gap: 4 }}>
@@ -248,11 +268,11 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
       ) : null}
 
       <div style={s.btnRow}>
-        <button style={s.btnPrimary} type="submit">Save</button>
+        <button style={s.btnPrimary} type="button" onClick={handleSave}>Save</button>
         {rule.id && <button style={s.btnDanger} type="button" onClick={() => onDelete(rule.id)}>Delete</button>}
         {!rule.id && <button style={s.btnSecondary} type="button" onClick={onCancel}>Cancel</button>}
       </div>
-    </form>
+    </div>
   );
 }
 
@@ -299,18 +319,8 @@ export default function Index() {
 
   const productLabel = (id) => productMap[id] || id.split("/").pop();
 
-  const saveRule = (e, rule) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
-    fd.set("intent", "save-rule");
-    fd.set("id", rule.id);
-    // Capture synchronously before any async/state update
-    const data = Object.fromEntries(fd.entries());
-    const fd2 = new FormData();
-    Object.entries(data).forEach(([k, v]) => fd2.set(k, v));
-    fetcher.submit(fd2, { method: "POST" });
+  const saveRule = (fd) => {
+    fetcher.submit(fd, { method: "POST" });
   };
 
   const deleteRule = (id) => {    const fd = new FormData();
