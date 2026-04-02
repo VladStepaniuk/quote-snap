@@ -353,8 +353,9 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
 export default function Index() {
   const { shop, rules, requests, products, collections, currentPlan, maxRules, analytics, appUrl } = useLoaderData();
   const fetcher = useFetcher();
+  const actionFetcher = useFetcher({ key: "dashboard-action" });
   const { revalidate } = useRevalidator();
-  const { search, pathname } = useLocation();
+  const { search } = useLocation();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
   const [statusMessage, setStatusMessage] = useState(null);
@@ -362,30 +363,25 @@ export default function Index() {
   const [showAddRule, setShowAddRule] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Direct fetch to absolute app URL — avoids Shopify admin iframe URL confusion
-  const postAction = async (fd) => {
-    setSubmitting(true);
-    try {
-      const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : search);
-      const resp = await fetch(`${appUrl}/app?${params.toString()}`, { method: "POST", body: fd });
-      const data = await resp.json().catch(() => ({}));
-      if (data.message) {
-        setStatusMessage(data.message);
-        setStatusError(null);
-        setShowAddRule(false);
-        revalidate();
-      } else if (data.error) {
-        setStatusError(data.error);
-        setStatusMessage(null);
-      } else {
-        revalidate();
-      }
-    } catch (err) {
-      setStatusError("Request failed. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+  const postAction = (fd) => {
+    actionFetcher.submit(fd, { method: "POST", action: "/app/action", navigate: false });
   };
+
+  useEffect(() => {
+    const d = actionFetcher.data;
+    if (!d) return;
+    if (d.message) {
+      setStatusMessage(d.message);
+      setStatusError(null);
+      setShowAddRule(false);
+      revalidate();
+    } else if (d.error) {
+      setStatusError(d.error);
+      setStatusMessage(null);
+    } else {
+      revalidate();
+    }
+  }, [actionFetcher.data]);
 
   useEffect(() => {
     if (fetcher.data?.message) {
