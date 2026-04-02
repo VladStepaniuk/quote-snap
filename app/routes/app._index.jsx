@@ -353,7 +353,8 @@ export default function Index() {
   const { shop, rules, requests, products, collections, currentPlan, maxRules, analytics } = useLoaderData();
   const fetcher = useFetcher();
   const { revalidate } = useRevalidator();
-  const { search } = useLocation();
+  const { search, pathname } = useLocation();
+  const selfAction = `${pathname}${search}`;
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
   const [statusMessage, setStatusMessage] = useState(null);
@@ -393,20 +394,20 @@ export default function Index() {
   const productLabel = (id) => productMap[id] || id.split("/").pop();
 
   const saveRule = (fd) => {
-    fetcher.submit(fd, { method: "POST", action: "/app", navigate: false });
+    fetcher.submit(fd, { method: "POST", action: selfAction, navigate: false });
   };
 
   const deleteRule = (id) => {    const fd = new FormData();
     fd.set("intent", "delete-rule");
     fd.set("id", id);
-    fetcher.submit(fd, { method: "POST", action: "/app", navigate: false });
+    fetcher.submit(fd, { method: "POST", action: selfAction, navigate: false });
   };
 
   const deleteRequest = (id) => {
     const fd = new FormData();
     fd.set("intent", "delete-request");
     fd.set("id", id);
-    fetcher.submit(fd, { method: "POST", action: "/app", navigate: false });
+    fetcher.submit(fd, { method: "POST", action: selfAction, navigate: false });
   };
 
   const runPreview = () => {
@@ -416,7 +417,7 @@ export default function Index() {
     fd.set("collectionIds", previewInput.collectionIds);
     fd.set("tags", previewInput.tags);
     if (previewInput.loggedIn) fd.set("loggedIn", "on");
-    fetcher.submit(fd, { method: "POST", action: "/app", navigate: false });
+    fetcher.submit(fd, { method: "POST", action: selfAction, navigate: false });
   };
 
   const exportCsv = () => {
