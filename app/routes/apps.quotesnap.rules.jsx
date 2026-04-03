@@ -8,14 +8,17 @@ async function getCustomerTags(shop, customerId) {
     const gid = customerId.toString().includes("gid://")
       ? customerId
       : `gid://shopify/Customer/${customerId}`;
+    console.log("[QuoteSnap] getCustomerTags gid:", gid);
     const res = await admin.graphql(`
       query GetCustomerTags($id: ID!) {
         customer(id: $id) { tags }
       }
     `, { variables: { id: gid } });
     const json = await res.json();
+    console.log("[QuoteSnap] customer tags response:", JSON.stringify(json.data));
     return (json.data?.customer?.tags || []).map(t => t.toLowerCase());
   } catch (e) {
+    console.error("[QuoteSnap] getCustomerTags error:", e?.message || e);
     return [];
   }
 }
@@ -30,6 +33,7 @@ export const loader = async ({ request }) => {
   }
 
   const customerTags = await getCustomerTags(shop, customerId);
+  console.log("[QuoteSnap] rules proxy — shop:", shop, "customerId:", customerId, "tags:", customerTags);
 
   const [rules, settings] = await Promise.all([
     prisma.quoteRule.findMany({
