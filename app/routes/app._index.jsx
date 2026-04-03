@@ -351,9 +351,8 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
 }
 
 export default function Index() {
-  const { shop, rules, requests, products, collections, currentPlan, maxRules, analytics, appUrl } = useLoaderData();
-  const fetcher = useFetcher();
-  const actionFetcher = useFetcher({ key: "dashboard-action" });
+  const { shop, rules, requests, products, collections, currentPlan, maxRules, analytics } = useLoaderData();
+  const actionFetcher = useFetcher();
   const { revalidate } = useRevalidator();
   const { search } = useLocation();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
@@ -361,10 +360,11 @@ export default function Index() {
   const [statusMessage, setStatusMessage] = useState(null);
   const [statusError, setStatusError] = useState(null);
   const [showAddRule, setShowAddRule] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   const postAction = (fd) => {
-    actionFetcher.submit(fd, { method: "POST", action: "/app/action", navigate: false });
+    // No action= specified — React Router posts to the current route's action.
+    // navigate:false prevents any page transition.
+    actionFetcher.submit(fd, { method: "POST", navigate: false });
   };
 
   useEffect(() => {
@@ -382,19 +382,6 @@ export default function Index() {
       revalidate();
     }
   }, [actionFetcher.data]);
-
-  useEffect(() => {
-    if (fetcher.data?.message) {
-      setStatusMessage(fetcher.data.message);
-      setStatusError(null);
-      setShowAddRule(false);
-      revalidate();
-    }
-    if (fetcher.data?.error) {
-      setStatusError(fetcher.data.error);
-      setStatusMessage(null);
-    }
-  }, [fetcher.data]);
 
   useEffect(() => {
     if (products.length > 0) {
@@ -595,13 +582,13 @@ export default function Index() {
                   Customer is logged in
                 </label>
                 <button style={s.btnPrimary} type="button" onClick={runPreview}>Run preview</button>
-                {fetcher.data?.preview && (
+                {actionFetcher.data?.preview && (
                   <div style={{ background: "#f6f6f7", borderRadius: 6, padding: "12px", fontSize: "0.8rem", marginTop: 4 }}>
-                    <div style={{ marginBottom: 6, fontWeight: 600, color: "#202223" }}>{fetcher.data.preview.message}</div>
+                    <div style={{ marginBottom: 6, fontWeight: 600, color: "#202223" }}>{actionFetcher.data.preview.message}</div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, color: "#374151" }}>
-                      <div><span style={{ color: "#8c9196" }}>Price visible: </span>{fetcher.data.preview.priceVisible ? "Yes" : "No"}</div>
-                      <div><span style={{ color: "#8c9196" }}>Add to cart: </span>{fetcher.data.preview.addToCartVisible ? "Yes" : "No"}</div>
-                      <div style={{ gridColumn: "1/-1" }}><span style={{ color: "#8c9196" }}>CTA: </span>{fetcher.data.preview.quoteButtonLabel || "None"}</div>
+                      <div><span style={{ color: "#8c9196" }}>Price visible: </span>{actionFetcher.data.preview.priceVisible ? "Yes" : "No"}</div>
+                      <div><span style={{ color: "#8c9196" }}>Add to cart: </span>{actionFetcher.data.preview.addToCartVisible ? "Yes" : "No"}</div>
+                      <div style={{ gridColumn: "1/-1" }}><span style={{ color: "#8c9196" }}>CTA: </span>{actionFetcher.data.preview.quoteButtonLabel || "None"}</div>
                     </div>
                   </div>
                 )}
