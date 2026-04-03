@@ -81,7 +81,7 @@ async function getCollectionSnapshot(admin) {
   return json.data?.collections?.nodes ?? [];
 }
 
-async function getCurrentPlan(admin) {
+export async function getCurrentPlan(admin) {
   try {
     const resp = await admin.graphql(`
       query {
