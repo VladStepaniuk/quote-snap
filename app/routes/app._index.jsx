@@ -578,20 +578,59 @@ export default function Index() {
                   </select>
                 </label>
                 <label style={s.checkLabel}>
-                  <input type="checkbox" checked={previewInput.loggedIn} onChange={(e) => setPreviewInput((c) => ({ ...c, loggedIn: e.target.checked }))} />
-                  Customer is logged in
+                  <input type="checkbox" checked={previewInput.loggedIn} onChange={(e) => setPreviewInput((c) => ({ ...c, loggedIn: e.target.checked }))} style={{ accentColor: "#008060" }} />
+                  <span>Customer is logged in</span>
                 </label>
-                <button style={s.btnPrimary} type="button" onClick={runPreview}>Run preview</button>
-                {actionFetcher.data?.preview && (
-                  <div style={{ background: "#f6f6f7", borderRadius: 6, padding: "12px", fontSize: "0.8rem", marginTop: 4 }}>
-                    <div style={{ marginBottom: 6, fontWeight: 600, color: "#202223" }}>{actionFetcher.data.preview.message}</div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, color: "#374151" }}>
-                      <div><span style={{ color: "#8c9196" }}>Price visible: </span>{actionFetcher.data.preview.priceVisible ? "Yes" : "No"}</div>
-                      <div><span style={{ color: "#8c9196" }}>Add to cart: </span>{actionFetcher.data.preview.addToCartVisible ? "Yes" : "No"}</div>
-                      <div style={{ gridColumn: "1/-1" }}><span style={{ color: "#8c9196" }}>CTA: </span>{actionFetcher.data.preview.quoteButtonLabel || "None"}</div>
-                    </div>
-                  </div>
+                {previewInput.loggedIn && (
+                  <label style={{ display: "grid", gap: 4 }}>
+                    <span style={s.label}>Customer tags (comma-separated)</span>
+                    <input style={s.input} placeholder="e.g. wholesale, vip" value={previewInput.tags} onChange={(e) => setPreviewInput((c) => ({ ...c, tags: e.target.value }))} />
+                  </label>
                 )}
+                <button style={s.btnPrimary} type="button" onClick={runPreview}>Run preview</button>
+                {actionFetcher.data?.preview && (() => {
+                  const pv = actionFetcher.data.preview;
+                  const matched = !!pv.matchingRuleId;
+                  return (
+                    <div style={{ borderRadius: 8, overflow: "hidden", border: `1.5px solid ${matched ? "#008060" : "#e3e7ed"}`, fontSize: "0.82rem" }}>
+                      {/* Header */}
+                      <div style={{ background: matched ? "#008060" : "#f3f4f6", color: matched ? "#fff" : "#6b7280", padding: "8px 12px", fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+                        {matched ? "✅" : "⚪"} {pv.message}
+                      </div>
+                      <div style={{ padding: "12px", display: "grid", gap: 8, background: "#fff" }}>
+                        {/* What the customer sees */}
+                        <div style={{ fontWeight: 700, color: "#374151", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>What the customer sees</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                          <div style={{ background: pv.priceVisible ? "#f0fdf4" : "#fef2f2", borderRadius: 6, padding: "6px 10px", display: "flex", gap: 6, alignItems: "center" }}>
+                            <span>{pv.priceVisible ? "✅" : "🚫"}</span>
+                            <span style={{ color: "#374151" }}>Price <b>{pv.priceVisible ? "visible" : "hidden"}</b></span>
+                          </div>
+                          <div style={{ background: pv.addToCartVisible ? "#f0fdf4" : "#fef2f2", borderRadius: 6, padding: "6px 10px", display: "flex", gap: 6, alignItems: "center" }}>
+                            <span>{pv.addToCartVisible ? "✅" : "🚫"}</span>
+                            <span style={{ color: "#374151" }}>Add to Cart <b>{pv.addToCartVisible ? "visible" : "hidden"}</b></span>
+                          </div>
+                          <div style={{ background: pv.quoteButtonVisible ? "#f0fdf4" : "#f3f4f6", borderRadius: 6, padding: "6px 10px", display: "flex", gap: 6, alignItems: "center", gridColumn: "1/-1" }}>
+                            <span>{pv.quoteButtonVisible ? "✅" : "⚪"}</span>
+                            <span style={{ color: "#374151" }}>Quote button <b>{pv.quoteButtonVisible ? `showing — "${pv.quoteButtonLabel || "Request a Quote"}"` : "not shown"}</b></span>
+                          </div>
+                        </div>
+                        {/* Matched rule details */}
+                        {matched && pv.rule && (
+                          <>
+                            <div style={{ fontWeight: 700, color: "#374151", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 4 }}>Matched rule details</div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                              <div style={{ color: "#6b7280" }}>Scope: <span style={{ color: "#374151", fontWeight: 600 }}>{pv.rule.scope === "all_products" ? "All products" : pv.rule.scope === "product" ? `Product: ${pv.rule.scopeValue}` : `Collection: ${pv.rule.scopeValue}`}</span></div>
+                              <div style={{ color: "#6b7280" }}>Audience: <span style={{ color: "#374151", fontWeight: 600 }}>{pv.rule.visibility === "all_visitors" ? "All visitors" : pv.rule.visibility === "guests_only" ? "Guests only" : `Tagged: ${pv.rule.customerTag || "—"}`}</span></div>
+                            </div>
+                          </>
+                        )}
+                        {!matched && (
+                          <div style={{ color: "#6b7280", fontSize: "0.8rem" }}>No active rule matched this product + visitor combination. The storefront shows the normal price and Add to Cart button.</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>

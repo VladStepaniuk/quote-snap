@@ -81,6 +81,12 @@ export function evaluatePreview(rules, payload) {
     quoteButtonVisible: matchingRule.replaceAddToCart || matchingRule.hidePrice,
     quoteButtonLabel: matchingRule.quoteButtonLabel,
     matchingRuleId: matchingRule.id,
+    rule: {
+      scope: matchingRule.scope,
+      scopeValue: matchingRule.scopeValue,
+      visibility: matchingRule.visibility,
+      customerTag: matchingRule.customerTag,
+    },
     message: `Rule "${matchingRule.name}" matched for this shopper and product.`,
   };
 }
