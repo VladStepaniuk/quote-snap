@@ -1,23 +1,27 @@
-import { Outlet, useRouteError } from "react-router";
+import { Outlet, useRouteError, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { AppTabs } from "../components/AppTabs";
 
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
-  return null;
+  return { apiKey: process.env.SHOPIFY_API_KEY };
 };
 
 export default function App() {
+  const { apiKey } = useLoaderData();
   return (
     <>
+      <script
+        src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
+        data-api-key={apiKey}
+      />
       <AppTabs />
       <Outlet />
     </>
   );
 }
 
-// Shopify needs React Router to catch some thrown responses, so that their headers are included in the response.
 export function ErrorBoundary() {
   return boundary.error(useRouteError());
 }
