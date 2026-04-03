@@ -1,12 +1,35 @@
 import prisma from "../db.server";
+import { unauthenticated } from "../shopify.server";
+
+async function getCustomerTags(shop, customerId) {
+  if (!customerId) return [];
+  try {
+    const { admin } = await unauthenticated.admin(shop);
+    const gid = customerId.toString().includes("gid://")
+      ? customerId
+      : `gid://shopify/Customer/${customerId}`;
+    const res = await admin.graphql(`
+      query GetCustomerTags($id: ID!) {
+        customer(id: $id) { tags }
+      }
+    `, { variables: { id: gid } });
+    const json = await res.json();
+    return (json.data?.customer?.tags || []).map(t => t.toLowerCase());
+  } catch (e) {
+    return [];
+  }
+}
 
 export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const shop = url.searchParams.get("shop");
+  const customerId = url.searchParams.get("customerId") || null;
 
   if (!shop) {
     return Response.json({ error: "Missing shop" }, { status: 400 });
   }
+
+  const customerTags = await getCustomerTags(shop, customerId);
 
   const [rules, settings] = await Promise.all([
     prisma.quoteRule.findMany({
@@ -84,7 +107,7 @@ export const loader = async ({ request }) => {
     },
   }));
 
-  return Response.json({ rules: rulesWithCustomization, customization: storeDefaults }, {
+  return Response.json({ rules: rulesWithCustomization, customization: storeDefaults, customerTags }, {
     headers: {
       "Access-Control-Allow-Origin": `https://${shop}`,
       "Cache-Control": "no-store",
