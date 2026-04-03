@@ -12,7 +12,7 @@
   data-shop="{{ shop.permanent_domain }}"
   data-api-url="/apps/quotesnap/rules"
   data-customer-tags="{{ customer.tags | join: ',' | downcase }}"
-  data-customer-logged-in="{{ customer != blank | json }}"
+  data-customer-logged-in="{% if customer %}true{% else %}false{% endif %}"
   style="display:none"
 >
   {%- comment -%} Populated by quotesnap.js once rules are fetched {%- endcomment -%}
