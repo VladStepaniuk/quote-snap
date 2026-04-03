@@ -374,7 +374,7 @@ export default function Index() {
     try {
       // window.shopify is the App Bridge global injected by Shopify on every embedded page
       const token = await window.shopify.idToken();
-      const resp = await fetch(`${appUrl}/app?${params.toString()}`, {
+      const resp = await fetch(`${appUrl}/app/save?${params.toString()}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: fd,
