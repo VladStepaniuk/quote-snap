@@ -1,4 +1,4 @@
-import { useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher, useLocation } from "react-router";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import { getCurrentPlan } from "../models/quotes.server";
@@ -51,6 +51,7 @@ const s = {
 
 export default function SettingsPage() {
   const data = useLoaderData();
+  const { search } = useLocation();
   const fetcher = useFetcher();
   const saved = fetcher.data?.ok;
   const isFree = data.plan === "free";
@@ -66,7 +67,7 @@ export default function SettingsPage() {
             <div style={s.upgradeBox}>
               <span style={{ fontSize: "1.2rem" }}>✉️</span>
               <span style={s.upgradeText}>Email notifications are available on <strong>Starter</strong> and <strong>Pro</strong> plans.</span>
-              <a href="/app/billing" style={s.upgradeLink}>Upgrade</a>
+              <a href={`/app/billing${search}`} style={s.upgradeLink}>Upgrade</a>
             </div>
           )}
 
