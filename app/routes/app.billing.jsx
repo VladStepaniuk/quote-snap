@@ -91,7 +91,6 @@ export const loader = async ({ request }) => {
 
     const data = await resp.json();
     const result = data?.data?.appSubscriptionCreate;
-    console.log("billing result:", JSON.stringify(result));
     if (result?.confirmationUrl) {
       // Return URL as JSON — client will do window.top.location.href to escape iframe
       return Response.json({ confirmationUrl: result.confirmationUrl });

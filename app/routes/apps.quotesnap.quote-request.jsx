@@ -58,7 +58,6 @@ export const action = async ({ request }) => {
 
   // Fire-and-forget email notification
   const settings = await prisma.shopSettings.findUnique({ where: { shop } });
-  console.log("[QuoteSnap] ShopSettings for", shop, ":", settings?.notificationEmail, "enabled:", settings?.emailEnabled);
   if (settings?.emailEnabled && settings?.notificationEmail) {
     sendQuoteNotification({
       to: settings.notificationEmail,
