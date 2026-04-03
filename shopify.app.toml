@@ -45,7 +45,4 @@ url = "https://quote-snap-production.up.railway.app/apps/quotesnap"
 subpath = "quotesnap"
 prefix = "apps"
 
-[[extensions]]
-type = "theme"
-name = "storefront-quote"
-handle = "storefront-quote"
+
