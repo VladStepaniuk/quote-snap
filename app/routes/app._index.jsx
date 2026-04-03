@@ -543,6 +543,35 @@ export default function Index() {
           </div>
         )}
 
+        {/* Theme setup banner — shown until first quote received */}
+        {analytics.total === 0 && (
+          <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 12, padding: "16px 20px", display: "flex", gap: 14, alignItems: "flex-start" }}>
+            <div style={{ fontSize: "1.4rem", lineHeight: 1, flexShrink: 0 }}>🧩</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, color: "#111827", fontSize: "0.95rem", marginBottom: 4 }}>Add QuoteSnap to your theme</div>
+              <div style={{ fontSize: "0.83rem", color: "#374151", marginBottom: 10 }}>The app won't appear on your storefront until you add the block to your product page template.</div>
+              <div style={{ display: "grid", gap: 6, fontSize: "0.82rem", color: "#374151" }}>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <span style={{ fontWeight: 700, color: "#008060", minWidth: 18 }}>1.</span>
+                  <span>In your store admin, go to <strong>Online Store → Themes → Customize</strong></span>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <span style={{ fontWeight: 700, color: "#008060", minWidth: 18 }}>2.</span>
+                  <span>Navigate to <strong>Products → Default product</strong> template</span>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <span style={{ fontWeight: 700, color: "#008060", minWidth: 18 }}>3.</span>
+                  <span>Click <strong>Add block</strong> in the product page sections, then select <strong>QuoteSnap</strong></span>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <span style={{ fontWeight: 700, color: "#008060", minWidth: 18 }}>4.</span>
+                  <span>Click <strong>Save</strong> — the quote button will appear on your product pages immediately</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div style={s.statsRow}>
           <div style={s.statCard}>
