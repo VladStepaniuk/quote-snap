@@ -76,6 +76,21 @@ const FONT_OPTIONS = [
   { label: "Montserrat", value: "'Montserrat', sans-serif" },
 ];
 
+function Tip({ text }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position: "relative", display: "inline-flex", alignItems: "center", marginLeft: 5 }}>
+      <button type="button" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)} onFocus={() => setShow(true)} onBlur={() => setShow(false)}
+        style={{ width: 16, height: 16, borderRadius: "50%", background: "#e5e7eb", border: "none", cursor: "pointer", fontSize: "0.65rem", fontWeight: 700, color: "#6b7280", lineHeight: 1, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>?</button>
+      {show && (
+        <span style={{ position: "absolute", left: 22, top: "50%", transform: "translateY(-50%)", background: "#1f2937", color: "#fff", borderRadius: 7, padding: "6px 10px", fontSize: "0.75rem", whiteSpace: "nowrap", zIndex: 100, maxWidth: 240, whiteSpace: "normal", lineHeight: 1.4, boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }}>
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collections }) {
   const [scope, setScope] = useState(rule.scope || "all_products");
   const [visibility, setVisibility] = useState(rule.visibility || "all_visitors");
@@ -136,11 +151,11 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
       <div style={s.ruleCardTitle}>{rule.id ? `Editing: ${rule.name || "Rule"}` : "New rule"}</div>
       <div style={s.row2}>
         <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Rule name</span>
+          <span style={s.label}>Rule name <Tip text="A label for your own reference — customers don't see this." /></span>
           <input style={s.input} name="name" defaultValue={rule.name} placeholder="e.g. Guests request quote" />
         </label>
         <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Button label</span>
+          <span style={s.label}>Button label <Tip text="The text shown on the quote button in your storefront." /></span>
           <input style={s.input} name="quoteButtonLabel" defaultValue={rule.quoteButtonLabel || "Request a Quote"} onChange={e => p("btnLabel")(e.target.value)} />
         </label>
       </div>
@@ -154,7 +169,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
       </div>
       <div style={s.row3}>
         <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Scope</span>
+          <span style={s.label}>Scope <Tip text="Which products this rule applies to. Specific product = highest priority, then collection, then all products." /></span>
           <select style={s.select} name="scope" defaultValue={rule.scope || "all_products"} onChange={(e) => setScope(e.target.value)}>
             <option value="all_products">All products</option>
             <option value="product">Specific product</option>
@@ -187,7 +202,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
           <input type="hidden" name="scopeValue" value="" />
         )}
         <label style={{ display: "grid", gap: 4 }}>
-          <span style={s.label}>Audience</span>
+          <span style={s.label}>Audience <Tip text="All visitors = everyone. Guests only = logged-out shoppers. Tagged customers = only customers with a specific Shopify tag." /></span>
           <select style={s.select} name="visibility" defaultValue={rule.visibility || "all_visitors"} onChange={e => setVisibility(e.target.value)}>
             <option value="all_visitors">All visitors</option>
             <option value="guests_only">Guests only</option>
@@ -204,11 +219,11 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
       <div style={s.checkRow}>
         <label style={s.checkLabel}>
           <input type="checkbox" name="hidePrice" defaultChecked={rule.hidePrice !== false} />
-          Hide price
+          Hide price <Tip text="Hides the product price on the storefront for matching visitors." />
         </label>
         <label style={s.checkLabel}>
           <input type="checkbox" name="replaceAddToCart" defaultChecked={rule.replaceAddToCart !== false} />
-          Replace Add to Cart
+          Replace Add to Cart <Tip text="Replaces the 'Add to Cart' button with your quote request button." />
         </label>
         <label style={s.checkLabel}>
           <input type="checkbox" name="enabled" defaultChecked={rule.enabled !== false} />
@@ -362,6 +377,12 @@ export default function Index() {
   const { revalidate } = useRevalidator();
   const { search } = useLocation();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
+  const [setupDismissed, setSetupDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("qs_setup_dismissed") === "1";
+  });
+  const showSetup = rules.length === 0 && !setupDismissed;
+  const dismissSetup = () => { setSetupDismissed(true); localStorage.setItem("qs_setup_dismissed", "1"); };
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
   const [statusMessage, setStatusMessage] = useState(null);
   const [statusError, setStatusError] = useState(null);
@@ -493,6 +514,35 @@ export default function Index() {
       )}
       <div style={s.page}>
 
+        {/* Getting started guide — shown only when no rules exist */}
+        {showSetup && (
+          <div style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #e6f7f2 100%)", border: "1px solid #b5e0d3", borderRadius: 12, padding: "20px 24px", marginBottom: 4, position: "relative" }}>
+            <button onClick={dismissSetup} style={{ position: "absolute", top: 12, right: 14, background: "none", border: "none", fontSize: "1rem", color: "#6b7280", cursor: "pointer", lineHeight: 1 }} title="Dismiss">✕</button>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+              <div style={{ fontSize: "2rem", lineHeight: 1 }}>🚀</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: "1rem", color: "#111827", marginBottom: 4 }}>Get started with QuoteSnap</div>
+                <div style={{ fontSize: "0.85rem", color: "#374151", marginBottom: 14 }}>Hide prices and replace "Add to Cart" with a quote request button — in 3 steps.</div>
+                <div style={{ display: "grid", gap: 8 }}>
+                  {[
+                    { n: "1", title: "Create a rule", desc: 'Click "+ Add rule" below — choose which products, collections, or your whole store to target.' },
+                    { n: "2", title: "Add the block to your theme", desc: "Go to Online Store → Themes → Customize → product page → add the QuoteSnap block." },
+                    { n: "3", title: "Set a notification email", desc: "Go to Settings → enter your email to receive quote requests instantly." },
+                  ].map(({ n, title, desc }) => (
+                    <div key={n} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                      <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#008060", color: "#fff", fontSize: "0.75rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{n}</div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#111827" }}>{title}</div>
+                        <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>{desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div style={s.statsRow}>
           <div style={s.statCard}>
@@ -555,7 +605,12 @@ export default function Index() {
               </div>
 
               {rules.length === 0 && !showAddRule && (
-                <div style={s.emptyState}>No rules yet. Add your first rule to start hiding prices.</div>
+                <div style={{ textAlign: "center", padding: "24px 16px" }}>
+                  <div style={{ fontSize: "2rem", marginBottom: 8 }}>🎯</div>
+                  <div style={{ fontWeight: 600, color: "#374151", marginBottom: 4 }}>No rules yet</div>
+                  <div style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: 14, maxWidth: 320, margin: "0 auto 14px" }}>Rules control who sees the quote button. You can target all products, a specific product, or a collection — and choose which visitors it applies to.</div>
+                  <button style={s.btnPrimary} onClick={() => setShowAddRule(true)}>+ Create your first rule</button>
+                </div>
               )}
 
               {rules.map((rule) => <RuleForm key={rule.id} rule={rule} onSave={saveRule} onDelete={deleteRule} onCancel={() => setShowAddRule(false)} isPro={currentPlan === "pro"} products={products} collections={collections} />)}
@@ -585,7 +640,11 @@ export default function Index() {
                 )}
               </div>
               {requests.length === 0 ? (
-                <div style={s.emptyState}>No quote requests yet.</div>
+                <div style={{ textAlign: "center", padding: "20px 12px" }}>
+                  <div style={{ fontSize: "1.5rem", marginBottom: 6 }}>📬</div>
+                  <div style={{ fontWeight: 600, color: "#374151", fontSize: "0.875rem", marginBottom: 4 }}>No quote requests yet</div>
+                  <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>When a customer submits a quote, it appears here. Set up a rule and add the block to your theme to get started.</div>
+                </div>
               ) : (
                 <div style={s.scrollList}>
                   {requests.map((r) => (
