@@ -11,6 +11,8 @@
   data-collection-ids="{{ product.collections | map: 'id' | json }}"
   data-shop="{{ shop.permanent_domain }}"
   data-api-url="/apps/quotesnap/rules"
+  data-customer-tags="{{ customer.tags | join: ',' | downcase }}"
+  data-customer-logged-in="{{ customer != blank | json }}"
   style="display:none"
 >
   {%- comment -%} Populated by quotesnap.js once rules are fetched {%- endcomment -%}

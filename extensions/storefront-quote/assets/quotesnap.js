@@ -42,6 +42,10 @@
   const collectionIds = JSON.parse(root.dataset.collectionIds || "[]");
   const shop = root.dataset.shop || "";
   const apiUrl = root.dataset.apiUrl || "";
+  // Customer context from Liquid (accurate, no API needed)
+  const customerLoggedIn = root.dataset.customerLoggedIn === "true";
+  const customerTags = (root.dataset.customerTags || "")
+    .split(",").map(t => t.trim()).filter(Boolean);
 
   if (!productId || !apiUrl) return;
 
@@ -57,22 +61,12 @@
 
   /** @param {import("./types").QuoteRule} rule */
   function matchesVisibility(rule) {
-    const meta = window.__st || {};
-    const loggedIn = window.__quotesnapLoggedIn !== undefined
-      ? window.__quotesnapLoggedIn
-      : !!meta.cid;
-    // Prefer server-resolved tags (accurate), fall back to ShopifyAnalytics (unreliable)
-    const tags = window.__quotesnapCustomerTags !== undefined
-      ? window.__quotesnapCustomerTags
-      : (window.ShopifyAnalytics?.meta?.page?.customerTags || []).map((t) =>
-          t.trim().toLowerCase()
-        );
-
+    // Use Liquid-rendered values — accurate, no API required, no Protected Data approval needed
     if (rule.visibility === "all_visitors") return true;
-    if (rule.visibility === "guests_only") return !loggedIn;
+    if (rule.visibility === "guests_only") return !customerLoggedIn;
     if (rule.visibility === "tagged_customers") {
       const tag = (rule.customerTag || "").trim().toLowerCase();
-      return tag ? tags.includes(tag) : false;
+      return tag ? customerTags.includes(tag) : false;
     }
     return false;
   }
@@ -254,36 +248,23 @@
   // ─── Main ─────────────────────────────────────────────────────────────────
 
   async function init() {
-    let rules, customization = {}, serverCustomerTags = null;
+    let rules, customization = {};
 
     try {
-      // Pass customerId so server can resolve tags via Admin API
-      const customerId = window.__st?.cid || null;
-      const url = new URL(apiUrl, window.location.href);
-      if (customerId) url.searchParams.set("customerId", customerId);
-      const res = await fetch(url.toString(), { credentials: "include" });
+      const res = await fetch(apiUrl, { credentials: "include" });
       if (!res.ok) return;
       const payload = await res.json();
-      // Support both old array format and new { rules, customization } format
       if (Array.isArray(payload)) {
         rules = payload;
       } else {
         rules = payload.rules || [];
         customization = payload.customization || {};
-        serverCustomerTags = payload.customerTags || null;
       }
     } catch {
       return;
     }
 
     if (!Array.isArray(rules) || rules.length === 0) return;
-
-    // Override matchesVisibility with server-resolved tags if available
-    if (serverCustomerTags !== null) {
-      const loggedIn = !!window.__st?.cid;
-      window.__quotesnapCustomerTags = serverCustomerTags;
-      window.__quotesnapLoggedIn = loggedIn;
-    }
 
     const match = findMatchingRule(rules);
     if (!match) return;
