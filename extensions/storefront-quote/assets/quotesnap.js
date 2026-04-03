@@ -101,12 +101,14 @@
   }
 
   /** @param {string} label */
-  function injectQuoteButton(label, customization = {}) {
+  function injectQuoteButton(label, customization = {}, replaceAddToCart = true) {
     document.querySelectorAll(ADD_TO_CART_SELECTORS).forEach((btn) => {
       if (btn.dataset.quotesnapReplaced) return;
 
-      btn.style.display = "none";
-      btn.setAttribute("aria-hidden", "true");
+      if (replaceAddToCart) {
+        btn.style.display = "none";
+        btn.setAttribute("aria-hidden", "true");
+      }
       btn.dataset.quotesnapReplaced = "1";
 
       const cta = document.createElement("button");
@@ -276,7 +278,7 @@
 
     // Apply button customization
     const btnLabel = ruleCustomization.buttonLabel || match.quoteButtonLabel || "Request a Quote";
-    if (match.replaceAddToCart) injectQuoteButton(btnLabel, ruleCustomization);
+    injectQuoteButton(btnLabel, ruleCustomization, match.replaceAddToCart);
 
     // Apply CSS variable customization (colours, fonts, sizes)
     applyCustomizationVars(ruleCustomization);
