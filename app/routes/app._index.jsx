@@ -78,6 +78,7 @@ const FONT_OPTIONS = [
 
 function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collections }) {
   const [scope, setScope] = useState(rule.scope || "all_products");
+  const [visibility, setVisibility] = useState(rule.visibility || "all_visitors");
   const [showCustom, setShowCustom] = useState(false);
   const [preview, setPreview] = useState({
     btnBg: rule.buttonBgColor || "#008060",
@@ -187,12 +188,18 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
         )}
         <label style={{ display: "grid", gap: 4 }}>
           <span style={s.label}>Audience</span>
-          <select style={s.select} name="visibility" defaultValue={rule.visibility || "all_visitors"}>
+          <select style={s.select} name="visibility" defaultValue={rule.visibility || "all_visitors"} onChange={e => setVisibility(e.target.value)}>
             <option value="all_visitors">All visitors</option>
             <option value="guests_only">Guests only</option>
             <option value="tagged_customers">Tagged customers</option>
           </select>
         </label>
+        {visibility === "tagged_customers" && (
+          <label style={{ display: "grid", gap: 4 }}>
+            <span style={s.label}>Customer tag</span>
+            <input style={s.input} name="customerTag" defaultValue={rule.customerTag || ""} placeholder="e.g. wholesale" />
+          </label>
+        )}
       </div>
       <div style={s.checkRow}>
         <label style={s.checkLabel}>
