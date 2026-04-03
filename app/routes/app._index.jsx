@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData, useRevalidator, useLocation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { useAppBridge } from "@shopify/app-bridge-react";
 import {
   getQuoteDashboardData,
   handleQuoteDashboardAction,
@@ -360,7 +359,6 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
 
 export default function Index() {
   const { shop, rules, requests, products, collections, currentPlan, maxRules, analytics } = useLoaderData();
-  const app = useAppBridge();
   const { revalidate } = useRevalidator();
   const { search } = useLocation();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
@@ -371,12 +369,11 @@ export default function Index() {
   const [previewResult, setPreviewResult] = useState(null);
 
   const postAction = async (fd) => {
-    // Use App Bridge session token as Authorization header so authenticate.admin()
-    // doesn't redirect — plain fetch to absolute Railway URL with bearer token
-    const token = await app.idToken();
     const appUrl = "https://quote-snap-production.up.railway.app";
     const params = new URLSearchParams(search);
     try {
+      // window.shopify is the App Bridge global injected by Shopify on every embedded page
+      const token = await window.shopify.idToken();
       const resp = await fetch(`${appUrl}/app?${params.toString()}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -397,7 +394,7 @@ export default function Index() {
         revalidate();
       }
     } catch (err) {
-      setStatusError("Request failed. Please try again.");
+      setStatusError("Request failed: " + (err?.message || err));
     }
   };
 
