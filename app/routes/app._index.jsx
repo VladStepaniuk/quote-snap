@@ -365,6 +365,13 @@ export default function Index() {
   const [selectedProductId, setSelectedProductId] = useState(defaultPreviewInput.productId);
   const [statusMessage, setStatusMessage] = useState(null);
   const [statusError, setStatusError] = useState(null);
+
+  // Auto-dismiss success toast after 3s
+  useEffect(() => {
+    if (!statusMessage) return;
+    const t = setTimeout(() => setStatusMessage(null), 3000);
+    return () => clearTimeout(t);
+  }, [statusMessage]);
   const [showAddRule, setShowAddRule] = useState(false);
   const [previewResult, setPreviewResult] = useState(null);
 
@@ -459,9 +466,25 @@ export default function Index() {
 
   return (
     <s-page heading="QuoteSnap" inlineSize="base">
+      {/* Toast notification — fixed bottom centre, auto-dismisses */}
+      {(statusMessage || statusError) && (
+        <div style={{
+          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+          zIndex: 9999, minWidth: 260, maxWidth: 420,
+          background: statusError ? "#450a0a" : "#052e16",
+          color: "#fff", borderRadius: 10,
+          padding: "12px 20px", boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+          display: "flex", alignItems: "center", gap: 10, fontSize: "0.875rem", fontWeight: 500,
+        }}>
+          <span style={{ fontSize: "1.1rem" }}>{statusError ? "❌" : "✅"}</span>
+          <span style={{ flex: 1 }}>{statusError || statusMessage}</span>
+          <button onClick={() => { setStatusMessage(null); setStatusError(null); }} style={{
+            background: "none", border: "none", color: "#fff", cursor: "pointer",
+            fontSize: "1rem", opacity: 0.7, padding: 0, lineHeight: 1,
+          }}>✕</button>
+        </div>
+      )}
       <div style={s.page}>
-        {statusMessage && <div style={s.notice}>{statusMessage}</div>}
-        {statusError && <div style={s.errorNotice}>{statusError}</div>}
 
         {/* Stats */}
         <div style={s.statsRow}>
