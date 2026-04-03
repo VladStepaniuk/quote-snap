@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFetcher, useLoaderData, useRevalidator, useLocation } from "react-router";
+import { useLoaderData, useRevalidator, useLocation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import {
   getQuoteDashboardData,
   handleQuoteDashboardAction,
@@ -359,7 +360,7 @@ function RuleForm({ rule, onSave, onDelete, onCancel, isPro, products, collectio
 
 export default function Index() {
   const { shop, rules, requests, products, collections, currentPlan, maxRules, analytics } = useLoaderData();
-  const actionFetcher = useFetcher();
+  const app = useAppBridge();
   const { revalidate } = useRevalidator();
   const { search } = useLocation();
   const [previewInput, setPreviewInput] = useState(defaultPreviewInput);
@@ -367,28 +368,38 @@ export default function Index() {
   const [statusMessage, setStatusMessage] = useState(null);
   const [statusError, setStatusError] = useState(null);
   const [showAddRule, setShowAddRule] = useState(false);
+  const [previewResult, setPreviewResult] = useState(null);
 
-  const postAction = (fd) => {
-    // No action= specified — React Router posts to the current route's action.
-    // navigate:false prevents any page transition.
-    actionFetcher.submit(fd, { method: "POST", navigate: false });
-  };
-
-  useEffect(() => {
-    const d = actionFetcher.data;
-    if (!d) return;
-    if (d.message) {
-      setStatusMessage(d.message);
-      setStatusError(null);
-      setShowAddRule(false);
-      revalidate();
-    } else if (d.error) {
-      setStatusError(d.error);
-      setStatusMessage(null);
-    } else {
-      revalidate();
+  const postAction = async (fd) => {
+    // Use App Bridge session token as Authorization header so authenticate.admin()
+    // doesn't redirect — plain fetch to absolute Railway URL with bearer token
+    const token = await app.idToken();
+    const appUrl = "https://quote-snap-production.up.railway.app";
+    const params = new URLSearchParams(search);
+    try {
+      const resp = await fetch(`${appUrl}/app?${params.toString()}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (data.preview) {
+        setPreviewResult(data.preview);
+      } else if (data.message) {
+        setStatusMessage(data.message);
+        setStatusError(null);
+        setShowAddRule(false);
+        revalidate();
+      } else if (data.error) {
+        setStatusError(data.error);
+        setStatusMessage(null);
+      } else {
+        revalidate();
+      }
+    } catch (err) {
+      setStatusError("Request failed. Please try again.");
     }
-  }, [actionFetcher.data]);
+  };
 
   useEffect(() => {
     if (products.length > 0) {
@@ -595,8 +606,8 @@ export default function Index() {
                   </label>
                 )}
                 <button style={s.btnPrimary} type="button" onClick={runPreview}>Run preview</button>
-                {actionFetcher.data?.preview && (() => {
-                  const pv = actionFetcher.data.preview;
+                {previewResult && (() => {
+                  const pv = previewResult;
                   const matched = !!pv.matchingRuleId;
                   return (
                     <div style={{ borderRadius: 8, overflow: "hidden", border: `1.5px solid ${matched ? "#008060" : "#e3e7ed"}`, fontSize: "0.82rem" }}>
