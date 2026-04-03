@@ -386,6 +386,10 @@ export default function Index() {
         headers: { Authorization: `Bearer ${token}` },
         body: fd,
       });
+      if (!resp.ok) {
+        setStatusError(`Server error (${resp.status}). Please try again.`);
+        return;
+      }
       const data = await resp.json().catch(() => ({}));
       if (data.preview) {
         setPreviewResult(data.preview);
@@ -398,6 +402,9 @@ export default function Index() {
         setStatusError(data.error);
         setStatusMessage(null);
       } else {
+        setStatusMessage("Saved!");
+        setStatusError(null);
+        setShowAddRule(false);
         revalidate();
       }
     } catch (err) {
