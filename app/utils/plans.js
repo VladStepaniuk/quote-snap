@@ -22,7 +22,7 @@ export const PLANS = {
     interval: "EVERY_30_DAYS",
     trialDays: 7,
     maxRules: 5,
-    features: ["5 rules", "Premium inbox", "CSV export", "Priority email support"],
+    features: ["5 rules", "Premium inbox", "Email notifications", "CSV export", "Priority email support"],
   },
   pro: {
     name: "Pro",
